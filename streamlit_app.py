@@ -77,56 +77,66 @@ def ensure_demo_student_ready():
 # 3. Generate Full-Fidelity SPA Bundle from Flask
 def get_full_application_html():
     """
-    Renders all views from the Flask application and packages them
-    into a high-performance Single Page Application with client-side routing
-    and live interactive AI Assessment recalculation.
+    Renders all views (including Sign In, Register, Sign Out flow, Admin Analytics,
+    AI Assessment, Career Compass, Decision Meter, and Venture Studio) from the Flask
+    application and packages them into a Single Page Application.
     """
     ensure_demo_student_ready()
 
-    routes = {
-        "home": "/",
-        "assessment": "/assessment",
-        "compass": "/career-compass",
-        "decision": "/decision-meter",
-        "venture-hub": "/venture-studio",
-        "ideas": "/venture-studio/ideas",
-        "design-thinking": "/venture-studio/design-thinking",
-        "validator": "/venture-studio/validator",
-        "lean-canvas": "/venture-studio/lean-canvas",
-        "mvp-planner": "/venture-studio/mvp-planner",
-        "pitch-builder": "/venture-studio/pitch-builder",
-        "founder-toolkit": "/venture-studio/founder-toolkit",
-        "tracker": "/venture-studio/tracker",
-        "dashboard": "/dashboard",
-        "pricing": "/pricing",
-        "billing": "/billing",
-        "business-model": "/business-model"
-    }
+    views_html = []
+    captured_scripts = []
+
+    def extract_view(client, view_name, route_path, default_display="none"):
+        res = client.get(route_path, follow_redirects=True)
+        html = res.data.decode('utf-8')
+        m = re.search(r'<main[^>]*>(.*?)</main>', html, re.DOTALL)
+        content = m.group(1) if m else html
+
+        # Extract inline scripts (e.g., Chart.js initializers, fillCreds)
+        view_scripts = re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>', html, re.DOTALL)
+        for s in view_scripts:
+            s_clean = s.strip()
+            if s_clean and s_clean not in captured_scripts:
+                captured_scripts.append(s_clean)
+
+        views_html.append(f'<div id="view-{view_name}" class="page-view" style="display:{default_display};">{content}</div>')
+        return html
 
     with app.test_client() as client:
-        # Pre-authenticate as demo student so all authenticated views render with full data
+        # A. Fetch unauthenticated views first (Sign In & Register)
+        client.get('/logout')
+        extract_view(client, "login", "/login")
+        extract_view(client, "register", "/register")
+
+        # B. Authenticate as demo student and fetch all student views
         client.post('/login', data={'email': 'student@pathforge.edu', 'password': 'student123'})
-        
-        home_html = client.get('/', follow_redirects=True).data.decode('utf-8')
-        
-        views_html = []
-        captured_scripts = []
-        
-        for name, r in routes.items():
-            res = client.get(r, follow_redirects=True)
-            html = res.data.decode('utf-8')
-            m = re.search(r'<main[^>]*>(.*?)</main>', html, re.DOTALL)
-            content = m.group(1) if m else html
-            
-            # Extract inline scripts (e.g., Chart.js initializers)
-            view_scripts = re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>', html, re.DOTALL)
-            for s in view_scripts:
-                s_clean = s.strip()
-                if s_clean and s_clean not in captured_scripts:
-                    captured_scripts.append(s_clean)
-                    
-            disp = "block" if name == "home" else "none"
-            views_html.append(f'<div id="view-{name}" class="page-view" style="display:{disp};">{content}</div>')
+        home_html = extract_view(client, "home", "/", default_display="block")
+
+        student_routes = {
+            "assessment": "/assessment",
+            "compass": "/career-compass",
+            "decision": "/decision-meter",
+            "venture-hub": "/venture-studio",
+            "ideas": "/venture-studio/ideas",
+            "design-thinking": "/venture-studio/design-thinking",
+            "validator": "/venture-studio/validator",
+            "lean-canvas": "/venture-studio/lean-canvas",
+            "mvp-planner": "/venture-studio/mvp-planner",
+            "pitch-builder": "/venture-studio/pitch-builder",
+            "founder-toolkit": "/venture-studio/founder-toolkit",
+            "tracker": "/venture-studio/tracker",
+            "dashboard": "/dashboard",
+            "pricing": "/pricing",
+            "billing": "/billing",
+            "business-model": "/business-model"
+        }
+        for name, r in student_routes.items():
+            extract_view(client, name, r)
+
+        # C. Authenticate as admin and fetch Admin Analytics view
+        client.get('/logout')
+        client.post('/login', data={'email': 'admin@pathforge.edu', 'password': 'admin123'})
+        extract_view(client, "admin", "/admin")
 
     # Read and inline static assets
     custom_css = ""
@@ -154,7 +164,7 @@ def get_full_application_html():
         flags=re.DOTALL
     )
 
-    # 4. Inject global SPA Navigation & Live Assessment Engine
+    # 4. Inject global SPA Navigation, Auth State Manager & Live Assessment Engine
     spa_nav_script = r"""
     <script>
     // Global SPA Navigation Engine
@@ -180,16 +190,62 @@ def get_full_application_html():
         }
     };
 
+    // Helper: Toggle Navbar between Logged-In and Signed-Out states
+    window.setNavbarAuthState = function(isLoggedIn, name, email, isAdmin) {
+        var loggedInBox = document.getElementById('nav-auth-logged-in');
+        var loggedOutBox = document.getElementById('nav-auth-logged-out');
+        if (!loggedInBox || !loggedOutBox) return;
+
+        if (isLoggedIn) {
+            loggedInBox.classList.remove('hidden');
+            loggedInBox.classList.add('flex');
+            loggedOutBox.classList.add('hidden');
+            loggedOutBox.classList.remove('flex');
+
+            if (name) {
+                var avatarEl = document.getElementById('nav-avatar-letter');
+                var firstEl = document.getElementById('nav-user-first-name');
+                var dropNameEl = document.getElementById('nav-dropdown-name');
+                if (avatarEl) avatarEl.innerText = name.trim().charAt(0).toUpperCase();
+                if (firstEl) firstEl.innerText = name.trim().split(' ')[0];
+                if (dropNameEl) dropNameEl.innerText = name.trim();
+            }
+            if (email) {
+                var dropEmailEl = document.getElementById('nav-dropdown-email');
+                if (dropEmailEl) dropEmailEl.innerText = email.trim();
+            }
+            var adminLink = document.getElementById('nav-admin-link');
+            if (adminLink) {
+                if (isAdmin) {
+                    adminLink.classList.remove('hidden');
+                } else {
+                    adminLink.classList.add('hidden');
+                }
+            }
+        } else {
+            loggedInBox.classList.add('hidden');
+            loggedInBox.classList.remove('flex');
+            loggedOutBox.classList.remove('hidden');
+            loggedOutBox.classList.add('flex');
+        }
+    };
+
     // Helper: Show feedback banner at the top of a view
-    window.showToastBanner = function(message) {
+    window.showToastBanner = function(message, category) {
         var existing = document.getElementById('spa-toast-banner');
         if (existing) existing.remove();
+        var isInfo = (category === 'info');
+        var colorClasses = isInfo
+            ? 'bg-sky-50 text-sky-800 border-sky-200'
+            : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+        var iconColor = isInfo ? 'text-sky-600' : 'text-emerald-600';
+
         var banner = document.createElement('div');
         banner.id = 'spa-toast-banner';
         banner.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4';
-        banner.innerHTML = '<div class="flex items-center justify-between p-4 rounded-xl border text-sm shadow-xs bg-emerald-50 text-emerald-800 border-emerald-200">' +
+        banner.innerHTML = '<div class="flex items-center justify-between p-4 rounded-xl border text-sm shadow-xs ' + colorClasses + '">' +
             '<div class="flex items-center space-x-2.5">' +
-            '<svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' +
+            '<svg class="w-5 h-5 ' + iconColor + ' flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' +
             '<span>' + message + '</span></div>' +
             '<button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-1">✕</button></div>';
         var mainEl = document.querySelector('main');
@@ -197,7 +253,7 @@ def get_full_application_html():
             mainEl.parentNode.insertBefore(banner, mainEl);
             setTimeout(function() {
                 if (banner.parentNode) banner.remove();
-            }, 6000);
+            }, 5000);
         }
     };
 
@@ -206,6 +262,9 @@ def get_full_application_html():
         var routeMap = {
             '/': 'home',
             '/home': 'home',
+            '/login': 'login',
+            '/register': 'register',
+            '/admin': 'admin',
             '/assessment': 'assessment',
             '/career-compass': 'compass',
             '/decision-meter': 'decision',
@@ -231,7 +290,17 @@ def get_full_application_html():
             var href = a.getAttribute('href');
             if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
 
-            var cleanHref = href.replace(/\/$/, '') || '/';
+            // Strip query string for route matching (e.g. /login?next=/dashboard -> /login)
+            var cleanHref = href.split('?')[0].replace(/\/$/, '') || '/';
+
+            if (cleanHref === '/logout') {
+                e.preventDefault();
+                window.setNavbarAuthState(false);
+                window.showToastBanner('You have been signed out successfully.', 'info');
+                window.navigateTo('login');
+                return;
+            }
+
             if (routeMap[cleanHref]) {
                 e.preventDefault();
                 window.navigateTo(routeMap[cleanHref]);
@@ -324,14 +393,35 @@ def get_full_application_html():
             });
         }
 
-        // Intercept any other forms (Design Thinking notes, Lean Canvas, Venture Ideas) so they work client-side without 404
+        // Intercept Sign In, Register, and Venture Studio forms so they work client-side without 404
         document.body.addEventListener('submit', function(e) {
             var form = e.target;
             if (!form || form.id === 'assessment-form') return;
             e.preventDefault();
-            var action = form.getAttribute('action') || '';
+            var action = (form.getAttribute('action') || '').split('?')[0];
 
-            if (action.indexOf('/design-thinking/delete/') !== -1) {
+            if (action === '/login') {
+                var emailInp = form.querySelector('input[name="email"]');
+                var emailVal = emailInp ? emailInp.value.trim().toLowerCase() : 'student@pathforge.edu';
+                if (emailVal.indexOf('admin') !== -1) {
+                    window.setNavbarAuthState(true, 'PathForge Admin', emailVal, true);
+                    window.showToastBanner('Welcome back, PathForge Admin!');
+                    window.navigateTo('admin');
+                } else {
+                    var dispName = emailVal === 'student@pathforge.edu' ? 'Aarav Sharma' : emailVal.split('@')[0];
+                    window.setNavbarAuthState(true, dispName, emailVal, false);
+                    window.showToastBanner('Welcome back, ' + dispName + '!');
+                    window.navigateTo('dashboard');
+                }
+            } else if (action === '/register') {
+                var nameInp = form.querySelector('input[name="name"]');
+                var regEmailInp = form.querySelector('input[name="email"]');
+                var newName = (nameInp && nameInp.value.trim()) ? nameInp.value.trim() : 'Aarav Sharma';
+                var newEmail = (regEmailInp && regEmailInp.value.trim()) ? regEmailInp.value.trim() : 'student@pathforge.edu';
+                window.setNavbarAuthState(true, newName, newEmail, false);
+                window.showToastBanner("Welcome to PathForge, " + newName + "! Let's start with your AI Career Assessment.");
+                window.navigateTo('assessment');
+            } else if (action.indexOf('/design-thinking/delete/') !== -1) {
                 var card = form.closest('.rounded-xl');
                 if (card) card.remove();
                 window.showToastBanner('Sticky note removed from board.');

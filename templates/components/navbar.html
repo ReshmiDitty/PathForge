@@ -62,49 +62,54 @@
       </nav>
 
       <!-- Right User / Auth Controls -->
-      <div class="flex items-center space-x-3">
+      <div id="nav-user-controls" class="flex items-center space-x-3">
         {% if current_user %}
-          <!-- Plan Badge -->
-          <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
-            {% if current_user.current_plan == 'founder' %}
-              bg-amber-100 text-amber-800 border border-amber-300
-            {% elif current_user.current_plan == 'pro' %}
-              bg-teal-100 text-teal-800 border border-teal-300
-            {% else %}
-              bg-slate-100 text-slate-700 border border-slate-300
-            {% endif %}">
-            <span class="w-1.5 h-1.5 rounded-full mr-1.5 
-              {% if current_user.current_plan == 'founder' %}bg-amber-500
-              {% elif current_user.current_plan == 'pro' %}bg-teal-500
-              {% else %}bg-slate-400{% endif %}"></span>
-            {{ current_user.current_plan.capitalize() }}
-          </span>
+          <div id="nav-auth-logged-in" class="flex items-center space-x-3">
+            <!-- Plan Badge -->
+            <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+              {% if current_user.current_plan == 'founder' %}
+                bg-amber-100 text-amber-800 border border-amber-300
+              {% elif current_user.current_plan == 'pro' %}
+                bg-teal-100 text-teal-800 border border-teal-300
+              {% else %}
+                bg-slate-100 text-slate-700 border border-slate-300
+              {% endif %}">
+              <span class="w-1.5 h-1.5 rounded-full mr-1.5 
+                {% if current_user.current_plan == 'founder' %}bg-amber-500
+                {% elif current_user.current_plan == 'pro' %}bg-teal-500
+                {% else %}bg-slate-400{% endif %}"></span>
+              {{ current_user.current_plan.capitalize() }}
+            </span>
 
-          <!-- User Menu Dropdown -->
-          <div class="relative group">
-            <button class="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition">
-              <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs">
-                {{ current_user.name[:1].upper() }}
-              </div>
-              <span class="text-sm font-medium text-slate-800 hidden lg:block">{{ current_user.name.split()[0] }}</span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
+            <!-- User Menu Dropdown -->
+            <div class="relative group">
+              <button class="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition">
+                <div id="nav-avatar-letter" class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs">
+                  {{ current_user.name[:1].upper() }}
+                </div>
+                <span id="nav-user-first-name" class="text-sm font-medium text-slate-800 hidden lg:block">{{ current_user.name.split()[0] }}</span>
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
 
-            <div class="absolute right-0 mt-1 w-52 rounded-xl bg-white shadow-xl border border-slate-200/80 p-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-150 z-50">
-              <div class="px-3 py-2 text-xs border-b border-slate-100 mb-1">
-                <p class="font-semibold text-slate-900 truncate">{{ current_user.name }}</p>
-                <p class="text-slate-500 truncate">{{ current_user.email }}</p>
+              <div class="absolute right-0 mt-1 w-52 rounded-xl bg-white shadow-xl border border-slate-200/80 p-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-150 z-50">
+                <div class="px-3 py-2 text-xs border-b border-slate-100 mb-1">
+                  <p id="nav-dropdown-name" class="font-semibold text-slate-900 truncate">{{ current_user.name }}</p>
+                  <p id="nav-dropdown-email" class="text-slate-500 truncate">{{ current_user.email }}</p>
+                </div>
+                <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Career Dashboard</a>
+                <a href="{{ url_for('subscription.billing') }}" class="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Billing & Subscription</a>
+                <a id="nav-admin-link" href="{{ url_for('admin.dashboard') }}" class="{% if current_user.role != 'admin' %}hidden {% endif %}block px-3 py-2 rounded-lg text-sm text-teal-700 font-semibold hover:bg-teal-50">Admin Analytics</a>
+                <div class="border-t border-slate-100 my-1"></div>
+                <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50">Sign Out</a>
               </div>
-              <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Career Dashboard</a>
-              <a href="{{ url_for('subscription.billing') }}" class="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-50">Billing & Subscription</a>
-              {% if current_user.role == 'admin' %}
-                <a href="{{ url_for('admin.dashboard') }}" class="block px-3 py-2 rounded-lg text-sm text-teal-700 font-semibold hover:bg-teal-50">Admin Analytics</a>
-              {% endif %}
-              <div class="border-t border-slate-100 my-1"></div>
-              <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50">Sign Out</a>
             </div>
+          </div>
+
+          <div id="nav-auth-logged-out" class="hidden items-center space-x-3">
+            <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition">Sign In</a>
+            <a href="{{ url_for('assessment.start_assessment') }}" class="text-sm font-semibold text-white bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-xl shadow-sm hover:shadow transition">Start Career Assessment</a>
           </div>
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition">Sign In</a>

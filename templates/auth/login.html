@@ -65,8 +65,10 @@
 {% block extra_js %}
 <script>
 function fillCreds(email, pass) {
-  document.getElementById('email').value = email;
-  document.getElementById('password').value = pass;
+  const emailEl = document.querySelector('#view-login input[name="email"]') || document.getElementById('email');
+  const passEl = document.querySelector('#view-login input[name="password"]') || document.getElementById('password');
+  if (emailEl) emailEl.value = email;
+  if (passEl) passEl.value = pass;
 }
 </script>
 {% endblock %}
