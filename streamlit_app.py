@@ -1,472 +1,431 @@
 """
 PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal
-Streamlit Cloud Entrypoint Application
+Streamlit Application – Identical UI & Experience to Localhost:5000
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import json
-import plotly.graph_objects as go
-from services.seed_data import CAREERS_SEED, STARTUP_IDEAS_SEED, PLANS_INFO, COUPONS_SEED
+import os
+import re
+from app import app
 from services import fallback_engine, ai_service
 
-# Page Configuration
+# 1. Page Configuration
 st.set_page_config(
-    page_title="PathForge – AI Career Guidance Portal",
+    page_title="PathForge – AI Career Guidance & Skills Intelligence Portal",
     page_icon="🧭",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom Styling
+# 2. Inject Global CSS to Match Localhost
 st.markdown("""
 <style>
-    :root {
-        --primary: #0d9488;
-        --navy: #0f172a;
+    /* Global Reset & Streamlit Chrome Removal */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="stSidebar"] {display: none;}
+    [data-testid="collapsedControl"] {display: none;}
+    
+    .block-container {
+        padding-top: 0.5rem !important;
+        padding-bottom: 2rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        max-width: 100% !important;
     }
-    .main-title {
-        font-size: 2.3rem;
+    
+    /* Top Navbar Styling */
+    .top-nav-container {
+        background-color: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .brand-logo-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .brand-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #0f172a, #0d9488);
+        border-radius: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 900;
+        font-size: 1.1rem;
+    }
+    .brand-title {
+        font-size: 1.25rem;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 0.2rem;
+        line-height: 1.2;
     }
-    .sub-title {
-        font-size: 1rem;
-        color: #475569;
-        margin-bottom: 1.5rem;
+    .brand-title span {
+        color: #0d9488;
     }
-    .metric-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 1rem;
-        padding: 1.2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .badge-teal {
+    .brand-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
         background-color: #ccfbf1;
         color: #0f766e;
-        padding: 0.2rem 0.6rem;
-        border-radius: 0.5rem;
-        font-weight: 700;
-        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.375rem;
+        border: 1px solid #99f6e4;
+        margin-left: 0.35rem;
+    }
+    
+    /* Custom Navigation Buttons */
+    div[data-testid="stHorizontalBlock"] {
+        align-items: center;
+    }
+    
+    iframe {
+        border: none !important;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State
-if "student_profile" not in st.session_state:
-    st.session_state.student_profile = {
-        "name": "Aarav Sharma",
-        "branch": "Computer Science & Engineering",
-        "year_of_study": "3rd Year",
-        "college": "Indian Institute of Information Technology",
-        "interests": ["Artificial Intelligence / GenAI", "SaaS & Cloud Web Apps"],
-        "skills": {
-            "Python & Backend Architecture": 8.5,
-            "Frontend & Web Development": 8.0,
-            "Data Analysis & Machine Learning": 7.5,
-            "Product Thinking & User Empathy": 7.0,
-            "System Design & Cloud Basics": 6.5,
-            "Verbal Communication & Pitching": 8.0
-        },
-        "strengths": ["Rapid Prototyping", "Critical Thinking", "Product Empathy"],
-        "risk_appetite": 5,
-        "stability_vs_autonomy": 6,
-        "hours_per_week": 18,
-        "primary_goal": "job"
-    }
-
-if "active_idea_idx" not in st.session_state:
-    st.session_state.active_idea_idx = 0
+# 3. Session State Initialization
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "home"
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am your **PathForge AI Career Mentor**. How can I help with your campus placement preparation, skill-gap analysis, or target career roles today?"}
+        {"role": "assistant", "content": "Hello! I am your **PathForge AI Career Mentor**. Ask me about campus placements, skill-gap benchmarks, MS vs Job decisions, or building your portfolio!"}
     ]
 
-# Sidebar Navigation
-st.sidebar.image("https://img.icons8.com/fluency/96/compass.png", width=50)
-st.sidebar.markdown("### **PathForge**\n*AI Career Guidance Portal*")
-st.sidebar.markdown("---")
+# 4. Helper Function: Render Exact Localhost Flask Page HTML
+@st.cache_data(show_spinner=False)
+def load_static_assets():
+    css_content = ""
+    js_content = ""
+    if os.path.exists("static/css/custom.css"):
+        with open("static/css/custom.css", "r", encoding="utf-8") as f:
+            css_content = f.read()
+    if os.path.exists("static/js/main.js"):
+        with open("static/js/main.js", "r", encoding="utf-8") as f:
+            js_content = f.read()
+    return css_content, js_content
 
-nav = st.sidebar.radio(
-    "Navigation Menu",
-    [
-        "🏠 Home & Overview",
-        "🧭 AI Career Assessment",
-        "📊 Career Compass & Radars",
-        "⚖️ Pathway Decision Meter",
-        "💼 Explore In-Demand Careers",
-        "🚀 Optional Venture Track",
-        "💬 AI Career Mentor",
-        "🏛️ Platform Architecture",
-        "💳 Student Pricing"
-    ]
-)
+def render_flask_page(route_path: str, height: int = 2000):
+    """
+    Renders the exact HTML generated by the Flask application,
+    inlining custom styles and JavaScript so it looks 100% identical to localhost:5000.
+    """
+    with app.test_client() as client:
+        # Authenticate as pre-seeded demo student for authenticated routes
+        client.post('/login', data={'email': 'student@pathforge.edu', 'password': 'student123'})
+        res = client.get(route_path, follow_redirects=True)
+        html = res.data.decode('utf-8')
 
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"**Logged in:** {st.session_state.student_profile['name']}")
-st.sidebar.markdown(f"**Major:** {st.session_state.student_profile['branch']}")
+    css_content, js_content = load_static_assets()
 
-# ==========================================
-# PAGE 1: HOME & OVERVIEW
-# ==========================================
-if nav == "🏠 Home & Overview":
-    st.markdown('<div class="main-title">Discover Your Ideal Career. Powered by Precision AI.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">PathForge is an AI-Enabled Career Guidance Portal that maps your academic discipline, technical skills, and passions into personalized high-trajectory career pathways.</div>', unsafe_allow_html=True)
+    # Inline CSS & JS
+    html = html.replace('<link rel="stylesheet" href="/static/css/custom.css">', f'<style>{css_content}</style>')
+    html = html.replace('<script src="/static/js/main.js"></script>', f'<script>{js_content}</script>')
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("""
-        <div class="metric-card">
-            <span class="badge-teal">Step 1</span>
-            <h4 style="margin-top:0.5rem; margin-bottom:0.2rem;">AI Aptitude & Skill Mapping</h4>
-            <p style="font-size:0.85rem; color:#64748b;">Multi-step assessment rating your core technical skills, passion domains, and risk preferences.</p>
+    # Convert internal links to target top or parent
+    link_map = {
+        'href="/assessment"': 'href="?page=assessment" target="_top"',
+        'href="/career-compass"': 'href="?page=career-compass" target="_top"',
+        'href="/decision-meter"': 'href="?page=decision-meter" target="_top"',
+        'href="/dashboard"': 'href="?page=dashboard" target="_top"',
+        'href="/pricing"': 'href="?page=pricing" target="_top"',
+        'href="/business-model"': 'href="?page=business-model" target="_top"',
+        'href="/venture-studio"': 'href="?page=venture-studio" target="_top"',
+        'href="/venture-studio/ideas"': 'href="?page=venture-ideas" target="_top"',
+        'href="/venture-studio/design-thinking"': 'href="?page=design-thinking" target="_top"',
+        'href="/venture-studio/validator"': 'href="?page=validator" target="_top"',
+        'href="/venture-studio/lean-canvas"': 'href="?page=lean-canvas" target="_top"',
+        'href="/venture-studio/mvp-planner"': 'href="?page=mvp-planner" target="_top"',
+        'href="/venture-studio/pitch-builder"': 'href="?page=pitch-builder" target="_top"',
+        'href="/venture-studio/founder-toolkit"': 'href="?page=founder-toolkit" target="_top"',
+        'href="/venture-studio/tracker"': 'href="?page=tracker" target="_top"',
+        'href="/billing"': 'href="?page=billing" target="_top"',
+        'href="/"': 'href="?page=home" target="_top"'
+    }
+    for old_href, new_href in link_map.items():
+        html = html.replace(old_href, new_href)
+
+    # Render inside isolated responsive component
+    components.html(html, height=height, scrolling=True)
+
+# 5. Handle URL Query Parameters (for one-click navigation)
+query_page = st.query_params.get("page", None)
+if query_page:
+    st.session_state.current_page = query_page
+
+# 6. Sleek Top Navigation Bar
+st.markdown("""
+<div class="top-nav-container">
+    <div class="brand-logo-box">
+        <div class="brand-icon">🧭</div>
+        <div>
+            <div class="brand-title">Path<span>Forge</span> <span class="brand-badge">AI Career Portal</span></div>
         </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown("""
-        <div class="metric-card">
-            <span class="badge-teal">Step 2</span>
-            <h4 style="margin-top:0.5rem; margin-bottom:0.2rem;">Career Compass & Radars</h4>
-            <p style="font-size:0.85rem; color:#64748b;">Diagnostic skill-gap radar charts benchmarking your baseline against hiring requirements (₹12-28 LPA CTC).</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        st.markdown("""
-        <div class="metric-card">
-            <span class="badge-teal">Step 3</span>
-            <h4 style="margin-top:0.5rem; margin-bottom:0.2rem;">6-Month Placement Roadmaps</h4>
-            <p style="font-size:0.85rem; color:#64748b;">Curated industry certifications, portfolio capstones, and 24/7 AI mentor guidance.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    </div>
+    <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;">
+        Student Profile: <span style="color:#0d9488;">Aarav Sharma</span> (Computer Science, 3rd Year) &bull; <span style="color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:4px; font-weight:700;">Founder Tier</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown("### 🎯 Featured Career Pathway Match")
-    careers = fallback_engine.generate_career_compass(st.session_state.student_profile)
-    top_c = careers[0]
+# Top Nav Menu Buttons
+col_nav = st.columns([1.1, 1.4, 1.4, 1.4, 1.4, 1.2, 1.2, 1.4, 1.2])
 
-    fc1, fc2 = st.columns([3, 2])
-    with fc1:
-        st.markdown(f"### {top_c['title']}")
-        st.markdown(f"**Match:** `{top_c['match_percentage']}% Profile Fit` &bull; **Category:** {top_c['category']}")
-        st.markdown(f"**Industry Demand:** {top_c['market_demand']}")
-        st.markdown(f"**Typical India CTC:** `{top_c['salary_range']}`")
-        st.write(top_c['description'])
-        st.info(f"💡 **Venture Bridge:** {top_c['venture_bridge']}")
+with col_nav[0]:
+    if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == "home" else "secondary"):
+        st.session_state.current_page = "home"
+        st.query_params["page"] = "home"
+        st.rerun()
 
-    with fc2:
-        # Radar preview
-        labels = list(top_c['skills_benchmark'].keys())
-        target_vals = list(top_c['skills_benchmark'].values())
-        user_vals = [top_c['user_radar_scores'].get(k, 70) for k in labels]
+with col_nav[1]:
+    if st.button("📝 Assessment", use_container_width=True, type="primary" if st.session_state.current_page == "assessment" else "secondary"):
+        st.session_state.current_page = "assessment"
+        st.query_params["page"] = "assessment"
+        st.rerun()
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatterpolar(r=user_vals, theta=labels, fill='toself', name='Your Baseline', line_color='#0d9488'))
-        fig.add_trace(go.Scatterpolar(r=target_vals, theta=labels, fill='toself', name='Target Benchmark', line_color='#94a3b8'))
-        fig.update_layout(polar=dict(radialaxis=dict(visible=False, range=[0, 100])), showlegend=True, margin=dict(l=20, r=20, t=20, b=20), height=300)
-        st.plotly_chart(fig, use_container_width=True)
+with col_nav[2]:
+    if st.button("📊 Career Compass", use_container_width=True, type="primary" if st.session_state.current_page == "career-compass" else "secondary"):
+        st.session_state.current_page = "career-compass"
+        st.query_params["page"] = "career-compass"
+        st.rerun()
 
-# ==========================================
-# PAGE 2: AI CAREER ASSESSMENT
-# ==========================================
-elif nav == "🧭 AI Career Assessment":
-    st.markdown('<div class="main-title">AI Career Assessment & Skills Mapping</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Update your competencies and career ambitions to recalculate your skill-gap radars.</div>', unsafe_allow_html=True)
+with col_nav[3]:
+    if st.button("⚖️ Decision Meter", use_container_width=True, type="primary" if st.session_state.current_page == "decision-meter" else "secondary"):
+        st.session_state.current_page = "decision-meter"
+        st.query_params["page"] = "decision-meter"
+        st.rerun()
 
-    with st.form("assessment_form"):
-        st.markdown("#### 1. Academic Background")
-        c1, c2 = st.columns(2)
-        with c1:
-            branch = st.selectbox(
-                "Academic Branch / Major",
-                [
-                    "Computer Science & Engineering",
-                    "Information Technology / AI & Data Science",
-                    "Electronics & Communication (ECE)",
-                    "Electrical & Electronics (EEE)",
-                    "Mechanical & Mechatronics",
-                    "Biotechnology & Biomedical",
-                    "Business Administration & Management (BBA/MBA)",
-                    "Commerce & Financial Markets"
-                ],
-                index=0
-            )
-        with c2:
-            year = st.selectbox("Year of Study", ["1st Year", "2nd Year", "3rd Year", "4th Year / Final Year", "Post-Graduate"], index=2)
+with col_nav[4]:
+    if st.button("🚀 Venture Track", use_container_width=True, type="primary" if "venture" in st.session_state.current_page or st.session_state.current_page in ["design-thinking", "lean-canvas", "validator", "mvp-planner", "pitch-builder", "founder-toolkit"] else "secondary"):
+        st.session_state.current_page = "venture-studio"
+        st.query_params["page"] = "venture-studio"
+        st.rerun()
 
-        st.markdown("#### 2. Domain Interests")
-        interests = st.multiselect(
-            "Select Passion Domains",
-            [
-                "Artificial Intelligence / GenAI",
-                "SaaS & Cloud Web Apps",
-                "FinTech & Quantitative",
-                "HealthTech & Bio",
-                "CleanTech & Decarbonization",
-                "EdTech & Skill Building",
-                "Hardware, Robotics & IoT"
-            ],
-            default=["Artificial Intelligence / GenAI", "SaaS & Cloud Web Apps"]
-        )
+with col_nav[5]:
+    if st.button("📈 Dashboard", use_container_width=True, type="primary" if st.session_state.current_page == "dashboard" else "secondary"):
+        st.session_state.current_page = "dashboard"
+        st.query_params["page"] = "dashboard"
+        st.rerun()
 
-        st.markdown("#### 3. Core Technical & Professional Skills (1 to 10)")
-        sk_cols = st.columns(3)
-        skills = {}
-        skill_names = [
-            "Python & Backend Architecture",
-            "Frontend & Web Development",
-            "Data Analysis & Machine Learning",
-            "Product Thinking & User Empathy",
-            "System Design & Cloud Basics",
-            "Verbal Communication & Pitching"
-        ]
-        for i, sk in enumerate(skill_names):
-            with sk_cols[i % 3]:
-                cur_val = st.session_state.student_profile["skills"].get(sk, 7.5)
-                skills[sk] = st.slider(sk, min_value=1.0, max_value=10.0, value=float(cur_val), step=0.5)
+with col_nav[6]:
+    if st.button("💳 Pricing", use_container_width=True, type="primary" if st.session_state.current_page == "pricing" else "secondary"):
+        st.session_state.current_page = "pricing"
+        st.query_params["page"] = "pricing"
+        st.rerun()
 
-        st.markdown("#### 4. Career Ambition & Preferences")
-        c_goal1, c_goal2 = st.columns(2)
-        with c_goal1:
-            goal = st.radio("Primary Post-College Goal", ["High-CTC Tech Job (Corporate)", "Higher Studies (MS/MBA)", "Venture Creation (Startup)"], index=0)
-        with c_goal2:
-            hours = st.slider("Available Upskilling Hours per Week", 5, 40, 18)
+with col_nav[7]:
+    if st.button("🏛️ Business Model", use_container_width=True, type="primary" if st.session_state.current_page == "business-model" else "secondary"):
+        st.session_state.current_page = "business-model"
+        st.query_params["page"] = "business-model"
+        st.rerun()
 
-        submitted = st.form_submit_button("🚀 Save & Recalculate AI Career Guidance Report", use_container_width=True)
-        if submitted:
-            goal_key = "job" if "Job" in goal else ("higher_studies" if "Higher" in goal else "startup")
-            st.session_state.student_profile.update({
-                "branch": branch,
-                "year_of_study": year,
-                "interests": interests,
-                "skills": skills,
-                "hours_per_week": hours,
-                "primary_goal": goal_key
-            })
-            st.success("Profile saved! Open 'Career Compass & Radars' or 'Pathway Decision Meter' in the menu.")
+with col_nav[8]:
+    if st.button("💬 AI Mentor", use_container_width=True, type="primary" if st.session_state.current_page == "ai-mentor" else "secondary"):
+        st.session_state.current_page = "ai-mentor"
+        st.query_params["page"] = "ai-mentor"
+        st.rerun()
 
-# ==========================================
-# PAGE 3: CAREER COMPASS & RADARS
-# ==========================================
-elif nav == "📊 Career Compass & Radars":
-    st.markdown('<div class="main-title">Career Compass & Skill-Gap Analysis</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">AI diagnostics benchmarking your competencies against top industry positions.</div>', unsafe_allow_html=True)
+# 7. Page Content Router
+active_tab = st.session_state.current_page
 
-    careers = fallback_engine.generate_career_compass(st.session_state.student_profile)
-    top_c = careers[0]
+# ---------------------------------------------
+# PAGE 1: HOME
+# ---------------------------------------------
+if active_tab == "home":
+    render_flask_page("/", height=2450)
 
-    col1, col2 = st.columns([3, 2])
-    with col1:
-        st.markdown(f"## 🏆 Top Recommendation: {top_c['title']}")
-        st.markdown(f"**Profile Match:** `{top_c['match_percentage']}%` | **Salary:** `{top_c['salary_range']}`")
-        st.write(top_c['description'])
+# ---------------------------------------------
+# PAGE 2: AI ASSESSMENT
+# ---------------------------------------------
+elif active_tab == "assessment":
+    # Sub-tabs: View Full Form or Live Skill Recalculator
+    sub_col1, sub_col2 = st.columns([1, 1])
+    with sub_col1:
+        st.caption("✨ **Live Interactive Assessment Engine**: Adjust your competencies below and click 'Recalculate Career Compass' to update your live report.")
+    
+    with st.expander("⚡ Quick Skill Recalculator (1 to 10 Sliders)", expanded=False):
+        with st.form("skill_update_form"):
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                sk_py = st.slider("Python & Backend Architecture", 1.0, 10.0, 9.0, 0.5)
+                sk_fe = st.slider("Frontend & Web Development", 1.0, 10.0, 8.5, 0.5)
+            with c2:
+                sk_ml = st.slider("Data Analysis & ML", 1.0, 10.0, 8.0, 0.5)
+                sk_sys = st.slider("System Design & Cloud Basics", 1.0, 10.0, 7.5, 0.5)
+            with c3:
+                sk_prod = st.slider("Product Thinking & Empathy", 1.0, 10.0, 7.0, 0.5)
+                sk_comm = st.slider("Verbal Communication & Pitching", 1.0, 10.0, 8.0, 0.5)
 
-        st.markdown("#### 📅 6-Month Actionable Upskilling Roadmap")
-        for step in top_c['roadmap_6_months']:
-            st.markdown(f"- **{step['month']} ({step['focus']}):** {step['details']}")
+            p_goal = st.selectbox("Primary Career Trajectory Goal", ["High-CTC Corporate Tech Job", "Higher Studies (MS/MBA)", "Startup Venture Creation"], index=0)
+            
+            submit_skill = st.form_submit_button("🚀 Update & Recalculate Career Compass Report", use_container_width=True)
+            if submit_skill:
+                with app.test_client() as client:
+                    client.post('/login', data={'email': 'student@pathforge.edu', 'password': 'student123'})
+                    client.post('/assessment', data={
+                        'branch': 'Computer Science & Engineering',
+                        'year_of_study': '3rd Year',
+                        'college': 'Indian Institute of Information Technology',
+                        'interests': ['Artificial Intelligence / GenAI', 'SaaS & Cloud Web Apps'],
+                        'skill_python': sk_py,
+                        'skill_frontend': sk_fe,
+                        'skill_data': sk_ml,
+                        'skill_product': sk_prod,
+                        'skill_system': sk_sys,
+                        'skill_communication': sk_comm,
+                        'strengths': ['Rapid Prototyping', 'System Design'],
+                        'risk_appetite': 5,
+                        'stability_vs_autonomy': 6,
+                        'hours_per_week': 20,
+                        'capital_willing': 'Low (₹0 - ₹10,000)',
+                        'primary_goal': 'job' if "Corporate" in p_goal else ('higher_studies' if "Higher" in p_goal else 'startup')
+                    }, follow_redirects=True)
+                st.success("✅ Profile updated! Opening your personalized Career Compass...")
+                st.session_state.current_page = "career-compass"
+                st.rerun()
 
-        st.markdown("#### 🎓 Curated Industry Certifications")
-        for cert in top_c['certifications']:
-            st.markdown(f"- 🏅 {cert}")
+    render_flask_page("/assessment", height=2300)
 
-    with col2:
-        st.markdown("### 📡 Diagnostic Skill-Gap Radar")
-        labels = list(top_c['skills_benchmark'].keys())
-        target_vals = list(top_c['skills_benchmark'].values())
-        user_vals = [top_c['user_radar_scores'].get(k, 70) for k in labels]
+# ---------------------------------------------
+# PAGE 3: CAREER COMPASS
+# ---------------------------------------------
+elif active_tab == "career-compass":
+    render_flask_page("/career-compass", height=1850)
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatterpolar(r=user_vals, theta=labels, fill='toself', name='Your Baseline', line_color='#0d9488'))
-        fig.add_trace(go.Scatterpolar(r=target_vals, theta=labels, fill='toself', name='Industry Benchmark', line_color='#64748b'))
-        fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), showlegend=True, height=380)
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("### 🔎 Alternate High-Match Career Pathways")
-    alt_cols = st.columns(len(careers[1:4]))
-    for idx, c in enumerate(careers[1:4]):
-        with alt_cols[idx]:
-            st.markdown(f"**{c['title']}**")
-            st.caption(f"Match: {c['match_percentage']}% | {c['salary_range']}")
-            st.write(c['description'][:140] + "...")
-            st.caption(f"Cert: {c['certifications'][0]}")
-
-# ==========================================
+# ---------------------------------------------
 # PAGE 4: DECISION METER
-# ==========================================
-elif nav == "⚖️ Pathway Decision Meter":
-    st.markdown('<div class="main-title">Career Pathway & Readiness Decision Meter</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">AI evaluation balancing your readiness for Corporate Roles, Higher Studies, and Entrepreneurship.</div>', unsafe_allow_html=True)
+# ---------------------------------------------
+elif active_tab == "decision-meter":
+    render_flask_page("/decision-meter", height=1550)
 
-    decision = fallback_engine.compute_tri_path_scores(st.session_state.student_profile)
+# ---------------------------------------------
+# PAGE 5: VENTURE TRACK
+# ---------------------------------------------
+elif active_tab in ["venture-studio", "venture-ideas", "design-thinking", "validator", "lean-canvas", "mvp-planner", "pitch-builder", "founder-toolkit", "tracker"]:
+    # Sub-navigation for Venture Track modules
+    v_cols = st.columns(8)
+    with v_cols[0]:
+        if st.button("Hub", use_container_width=True):
+            st.session_state.current_page = "venture-studio"
+            st.rerun()
+    with v_cols[1]:
+        if st.button("1. Ideas", use_container_width=True):
+            st.session_state.current_page = "venture-ideas"
+            st.rerun()
+    with v_cols[2]:
+        if st.button("2. Design Board", use_container_width=True):
+            st.session_state.current_page = "design-thinking"
+            st.rerun()
+    with v_cols[3]:
+        if st.button("3. Validator", use_container_width=True):
+            st.session_state.current_page = "validator"
+            st.rerun()
+    with v_cols[4]:
+        if st.button("4. Lean Canvas", use_container_width=True):
+            st.session_state.current_page = "lean-canvas"
+            st.rerun()
+    with v_cols[5]:
+        if st.button("5. MVP Planner", use_container_width=True):
+            st.session_state.current_page = "mvp-planner"
+            st.rerun()
+    with v_cols[6]:
+        if st.button("6. Pitch Deck", use_container_width=True):
+            st.session_state.current_page = "pitch-builder"
+            st.rerun()
+    with v_cols[7]:
+        if st.button("7. Toolkit", use_container_width=True):
+            st.session_state.current_page = "founder-toolkit"
+            st.rerun()
 
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.metric(label="Corporate & Tech Career", value=f"{decision['job_score']} / 100", delta="Primary Placement Route")
-    with m2:
-        st.metric(label="Higher Studies (MS/MBA)", value=f"{decision['higher_studies_score']} / 100", delta="Specialization")
-    with m3:
-        st.metric(label="Venture Track", value=f"{decision['venture_score']} / 100", delta="Optional Startup Route")
+    v_map = {
+        "venture-studio": ("/venture-studio", 1700),
+        "venture-ideas": ("/venture-studio/ideas", 1700),
+        "design-thinking": ("/venture-studio/design-thinking", 1500),
+        "validator": ("/venture-studio/validator", 1850),
+        "lean-canvas": ("/venture-studio/lean-canvas", 1600),
+        "mvp-planner": ("/venture-studio/mvp-planner", 1500),
+        "pitch-builder": ("/venture-studio/pitch-builder", 2000),
+        "founder-toolkit": ("/venture-studio/founder-toolkit", 1850),
+        "tracker": ("/venture-studio/tracker", 1600),
+    }
+    target_route, h = v_map.get(active_tab, ("/venture-studio", 1700))
+    render_flask_page(target_route, height=h)
 
-    st.markdown("---")
-    c_chart, c_adv = st.columns([3, 2])
-    with c_chart:
-        st.markdown("### 📊 Comparative Pathway Scores")
-        bar_fig = go.Figure(go.Bar(
-            x=['Corporate Tech Job', 'Higher Studies (MS/MBA)', 'Venture Creation'],
-            y=[decision['job_score'], decision['higher_studies_score'], decision['venture_score']],
-            marker_color=['#0d9488', '#4f46e5', '#10b981'],
-            text=[f"{decision['job_score']}%", f"{decision['higher_studies_score']}%", f"{decision['venture_score']}%"],
-            textposition='auto'
-        ))
-        bar_fig.update_layout(yaxis=dict(range=[0, 100]), height=320, margin=dict(l=20, r=20, t=20, b=20))
-        st.plotly_chart(bar_fig, use_container_width=True)
+# ---------------------------------------------
+# PAGE 6: DASHBOARD
+# ---------------------------------------------
+elif active_tab == "dashboard":
+    render_flask_page("/dashboard", height=1650)
 
-    with c_adv:
-        st.markdown(f"### 💡 Synthesis: {decision['verdict_title']}")
-        st.write(decision['recommendation'])
-        st.info("📌 **Placement Strategy:** Prioritize technical placement prep to lock down an early offer, while pursuing innovation projects with zero financial pressure.")
+# ---------------------------------------------
+# PAGE 7: PRICING
+# ---------------------------------------------
+elif active_tab == "pricing":
+    render_flask_page("/pricing", height=2000)
 
-# ==========================================
-# PAGE 5: EXPLORE IN-DEMAND CAREERS
-# ==========================================
-elif nav == "💼 Explore In-Demand Careers":
-    st.markdown('<div class="main-title">Explore 15+ In-Demand Tech & Engineering Careers</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Comprehensive labor market benchmarks, compensation ranges (CTC), and required skills.</div>', unsafe_allow_html=True)
+# ---------------------------------------------
+# PAGE 8: BUSINESS MODEL
+# ---------------------------------------------
+elif active_tab == "business-model":
+    render_flask_page("/business-model", height=2100)
 
-    search = st.text_input("🔍 Search careers by keyword (e.g. AI, Cloud, Python, Design, Finance):", "")
-    filtered = [c for c in CAREERS_SEED if search.lower() in c['title'].lower() or any(search.lower() in kw for kw in c['match_keywords'])]
+# ---------------------------------------------
+# PAGE 9: AI MENTOR LIVE CHAT
+# ---------------------------------------------
+elif active_tab == "ai-mentor":
+    st.markdown("""
+    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="color:#0f172a; margin-bottom:0.25rem;">💬 PathForge 24/7 AI Career Mentor</h2>
+        <p style="color:#64748b; font-size:0.9rem; margin-bottom:0;">Ask anything regarding campus placement strategies, technical interview prep (DSA / System Design), skill gap analysis, or entrepreneurship.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    for c in filtered:
-        with st.expander(f"💼 {c['title']} ({c['salary_range']}) – {c['category']}"):
-            st.write(c['description'])
-            st.markdown(f"**Industry Demand:** `{c['market_demand']}`")
-            st.markdown("**Core Skills Benchmark:**")
-            st.json(c['skills_benchmark'])
-            st.markdown(f"**Curated Certifications:** {', '.join(c['certifications'])}")
-            st.caption(f"💡 Venture Bridge: {c['venture_bridge']}")
-
-# ==========================================
-# PAGE 6: OPTIONAL VENTURE TRACK
-# ==========================================
-elif nav == "🚀 Optional Venture Track":
-    st.markdown('<div class="main-title">Optional Innovation & Venture Track</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Turn your career competencies into an entrepreneurial startup venture using Design Thinking and Lean Canvas frameworks.</div>', unsafe_allow_html=True)
-
-    v_tab1, v_tab2, v_tab3, v_tab4 = st.tabs(["1. Idea Generator", "2. Lean Canvas", "3. Idea Validator", "4. Grants Toolkit"])
-
-    with v_tab1:
-        st.markdown("### Synthesized Startup Concepts from Your Skills")
-        ideas = fallback_engine.generate_venture_ideas(st.session_state.student_profile, count=4)
-        for idx, item in enumerate(ideas):
-            with st.container():
-                st.markdown(f"#### {item['title']}")
-                st.caption(f"Target: {item['target_customer']} | Model: {item['revenue_model']}")
-                st.write(f"**Problem:** {item['problem_statement']}")
-                st.write(f"**Solution:** {item['solution']}")
-                st.caption(f"Why Now: {item['why_now']}")
-                st.markdown("---")
-
-    with v_tab2:
-        st.markdown("### Ash Maurya 9-Block Lean Canvas")
-        canvas = fallback_engine.generate_lean_canvas(ideas[0])
-        col_l1, col_l2, col_l3 = st.columns(3)
-        with col_l1:
-            st.text_area("1. Problem", canvas['problem'], height=130)
-            st.text_area("4. Solution", canvas['solution'], height=130)
-        with col_l2:
-            st.text_area("3. Unique Value Proposition", canvas['unique_value_proposition'], height=130)
-            st.text_area("9. Unfair Advantage", canvas['unfair_advantage'], height=130)
-        with col_l3:
-            st.text_area("2. Customer Segments", canvas['customer_segments'], height=130)
-            st.text_area("5. Channels", canvas['channels'], height=130)
-
-        col_b1, col_b2 = st.columns(2)
-        with col_b1:
-            st.text_area("7. Cost Structure", canvas['cost_structure'], height=90)
-        with col_b2:
-            st.text_area("6. Revenue Streams", canvas['revenue_streams'], height=90)
-
-    with v_tab3:
-        st.markdown("### Deep Idea Validation Scorecard")
-        val = fallback_engine.validate_idea_scorecard(ideas[0])
-        st.metric(label="Validation Score", value=f"{val['total_score']} / 100", delta=val['verdict'])
-        st.write(val['verdict_message'])
-        st.markdown("#### Indian Market Sizing (TAM/SAM/SOM)")
-        st.write(f"- **TAM:** {val['tam_sam_som']['tam']} ({val['tam_sam_som']['tam_description']})")
-        st.write(f"- **SAM:** {val['tam_sam_som']['sam']} ({val['tam_sam_som']['sam_description']})")
-        st.write(f"- **SOM (3-Yr):** {val['tam_sam_som']['som']} ({val['tam_sam_som']['som_description']})")
-
-    with v_tab4:
-        st.markdown("### Indian Startup Schemes & Grants")
-        st.markdown("""
-        - 🏛️ **Startup India Seed Fund Scheme (SISFS):** Up to **₹20 Lakhs** grant for validation/MVP, and up to **₹50 Lakhs** convertible debt.
-        - 🔬 **NIDHI-PRAYAS (DST):** Up to **₹10 Lakhs** non-dilutive prototype grant for hardware & IoT.
-        - 🧬 **BIRAC BIG:** Up to **₹50 Lakhs** for healthcare, biotech, and bio-agriculture innovations.
-        - 🏢 **Premier Incubators:** T-Hub Hyderabad, NSRCEL IIM Bangalore, SINE IIT Bombay.
-        """)
-
-# ==========================================
-# PAGE 7: AI CAREER MENTOR
-# ==========================================
-elif nav == "💬 AI Career Mentor":
-    st.markdown('<div class="main-title">24/7 AI Career & Placement Mentor</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Ask about placement interview prep, closing skill gaps, salary negotiations, or career pivots.</div>', unsafe_allow_html=True)
-
+    # Render Chat History
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    if prompt := st.chat_input("Ask a career or placement question..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    # Chat Input
+    if user_query := st.chat_input("Ask your career or placement question..."):
+        st.session_state.messages.append({"role": "user", "content": user_query})
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(user_query)
 
-        reply = fallback_engine.ai_mentor_respond(prompt, st.session_state.student_profile)
+        # Call AI service with student context
+        profile_ctx = {
+            "branch": "Computer Science & Engineering",
+            "year_of_study": "3rd Year",
+            "target_role": "Full-Stack AI Application Engineer",
+            "goal": "job",
+            "skills": {
+                "Python & Backend": 9.0,
+                "Frontend & Web": 8.5,
+                "Data Analysis & ML": 8.0,
+                "System Design": 7.5
+            }
+        }
+        with st.spinner("AI Mentor is analyzing your career profile..."):
+            reply = ai_service.ask_mentor(user_query, profile_ctx)
+
         st.session_state.messages.append({"role": "assistant", "content": reply})
         with st.chat_message("assistant"):
             st.markdown(reply)
-
-# ==========================================
-# PAGE 8: PLATFORM ARCHITECTURE
-# ==========================================
-elif nav == "🏛️ Platform Architecture":
-    st.markdown('<div class="main-title">PathForge Platform Architecture & Unit Economics</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Sustainable business model for an AI-Enabled Career Guidance Portal.</div>', unsafe_allow_html=True)
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1: st.metric("Customer Acq Cost (CAC)", "₹140")
-    with c2: st.metric("Lifetime Value (LTV)", "₹890")
-    with c3: st.metric("LTV : CAC Ratio", "6.35x")
-    with c4: st.metric("Gross Margin", "82%")
-
-    st.markdown("---")
-    st.markdown("""
-    #### Business Engine & Scaling Strategy
-    - **B2C Student Subscriptions:** Free tier (1 assessment), Pro (₹199/mo), Founder (₹499/mo).
-    - **B2B Campus Placement Partnerships:** Institutional licenses for college Training & Placement Offices (TPOs) at ₹1.5 Lakhs/year.
-    - **Cloud Microservices:** Lightweight Python inference + SQLite/Postgres. Low server cost of ₹0.08 per generation.
-    """)
-
-# ==========================================
-# PAGE 9: STUDENT PRICING
-# ==========================================
-elif nav == "💳 Student Pricing":
-    st.markdown('<div class="main-title">Student-Friendly Transparent Pricing</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Start free. Upgrade to unlock unlimited multi-scenario assessments and deep validation.</div>', unsafe_allow_html=True)
-
-    p1, p2, p3 = st.columns(3)
-    with p1:
-        st.markdown("### Free Starter\n**₹0** / forever")
-        st.markdown("- 1 AI Career Assessment\n- Top 3 Career Matches\n- Basic Skill-Gap Radar\n- 3 AI generations / mo")
-    with p2:
-        st.markdown("### Pro Career (Popular)\n**₹199** / month")
-        st.markdown("- **Unlimited** Assessments\n- Full Diagnostic Radars\n- 6-Month Upskilling Roadmap\n- Complete Venture Track\n- Lean Canvas PDF export")
-    with p3:
-        st.markdown("### Elite Founder\n**₹499** / month")
-        st.markdown("- Everything in Pro\n- Deep Idea Validator & SWOT\n- 10-Slide Investor Deck\n- Priority AI Placement Mentor\n- Indian Grant Matcher")
-
-    st.markdown("---")
-    st.markdown("💡 **Student Discount:** Enter coupon code `STUDENT20` for an instant 20% discount!")
-
