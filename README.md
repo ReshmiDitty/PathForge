@@ -90,7 +90,7 @@ To deploy PathForge on Streamlit Community Cloud:
 
 ---
 
-## 🔑 4. Demo & Test Credentials
+## 🔑 5. Demo & Test Credentials
 
 The database automatically seeds two pre-configured accounts on initial launch for instant viva testing:
 
@@ -103,7 +103,7 @@ The database automatically seeds two pre-configured accounts on initial launch f
 
 ---
 
-## 💳 5. Payment Testing & Demo Checkout Guide
+## 💳 6. Payment Testing & Demo Checkout Guide
 
 PathForge supports two modes of payment processing:
 1. **Live Razorpay Test Mode**: When `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are present in `.env`, the Razorpay Test modal opens.
@@ -120,7 +120,7 @@ PathForge supports two modes of payment processing:
 
 ---
 
-## 🎬 6. Step-by-Step Viva Demo Script
+## 🎬 7. Step-by-Step Viva Demo Script
 
 Follow this 5-minute walkthrough during your project demonstration or viva examination:
 
@@ -179,7 +179,7 @@ Follow this 5-minute walkthrough during your project demonstration or viva exami
 
 ---
 
-## 🎓 7. Academic Viva & Course Q&A Cheat Sheet
+## 🎓 8. Academic Viva & Course Q&A Cheat Sheet
 
 Prepare for these common professor questions:
 
@@ -203,7 +203,7 @@ Prepare for these common professor questions:
 
 ---
 
-## 🔒 8. Security & Ethical AI Notice
+## 🔒 9. Security & Ethical AI Notice
 - All secrets are isolated strictly in `.env`.
 - Passwords are encrypted using Werkzeug PBKDF2/SHA-256 salts.
 - Feature gating is enforced on backend Python route decorators (`@subscription_required`), preventing unauthorized URL tampering.
