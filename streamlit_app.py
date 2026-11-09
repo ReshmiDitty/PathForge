@@ -1,431 +1,199 @@
 """
 PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal
-Streamlit Application – Identical UI & Experience to Localhost:5000
+Streamlit Cloud Entrypoint – 100% Visual Parity with Localhost:5000
 """
 
 import streamlit as st
 import streamlit.components.v1 as components
-import json
 import os
 import re
 from app import app
-from services import fallback_engine, ai_service
 
 # 1. Page Configuration
 st.set_page_config(
-    page_title="PathForge – AI Career Guidance & Skills Intelligence Portal",
+    page_title="PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal",
     page_icon="🧭",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# 2. Inject Global CSS to Match Localhost
+# 2. Complete CSS Reset: Remove Streamlit Chrome, Header, Footer & Extra Navbars
 st.markdown("""
 <style>
-    /* Global Reset & Streamlit Chrome Removal */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    [data-testid="stSidebar"] {display: none;}
-    [data-testid="collapsedControl"] {display: none;}
+    /* Completely hide Streamlit Header, Footer, Sidebar, and Toolbar */
+    #MainMenu, header, footer, [data-testid="stSidebar"], [data-testid="collapsedControl"], [data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
     
+    /* Zero out container padding so the PathForge navbar sits at the very top */
     .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 2rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100vw !important;
     }
     
-    /* Top Navbar Styling */
-    .top-nav-container {
-        background-color: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 0.75rem 1.5rem;
-        margin-bottom: 1rem;
-        border-radius: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-    .brand-logo-box {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    .brand-icon {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, #0f172a, #0d9488);
-        border-radius: 0.6rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 900;
-        font-size: 1.1rem;
-    }
-    .brand-title {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: #0f172a;
-        line-height: 1.2;
-    }
-    .brand-title span {
-        color: #0d9488;
-    }
-    .brand-badge {
-        font-size: 0.65rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        background-color: #ccfbf1;
-        color: #0f766e;
-        padding: 0.15rem 0.5rem;
-        border-radius: 0.375rem;
-        border: 1px solid #99f6e4;
-        margin-left: 0.35rem;
-    }
-    
-    /* Custom Navigation Buttons */
-    div[data-testid="stHorizontalBlock"] {
-        align-items: center;
-    }
-    
+    /* Full-bleed iframe */
     iframe {
         border: none !important;
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Session State Initialization
-if "current_page" not in st.session_state:
-    st.session_state.current_page = "home"
-
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am your **PathForge AI Career Mentor**. Ask me about campus placements, skill-gap benchmarks, MS vs Job decisions, or building your portfolio!"}
-    ]
-
-# 4. Helper Function: Render Exact Localhost Flask Page HTML
+# 3. Cache & Generate Full-Fidelity SPA Bundle from Flask
 @st.cache_data(show_spinner=False)
-def load_static_assets():
-    css_content = ""
-    js_content = ""
-    if os.path.exists("static/css/custom.css"):
-        with open("static/css/custom.css", "r", encoding="utf-8") as f:
-            css_content = f.read()
-    if os.path.exists("static/js/main.js"):
-        with open("static/js/main.js", "r", encoding="utf-8") as f:
-            js_content = f.read()
-    return css_content, js_content
+def get_full_application_html():
+    """
+    Renders all 15 views from the Flask application and packages them
+    into a high-performance Single Page Application with client-side routing.
+    This guarantees 100% visual parity with localhost:5000 and instant interactivity.
+    """
+    routes = {
+        "home": "/",
+        "assessment": "/assessment",
+        "compass": "/career-compass",
+        "decision": "/decision-meter",
+        "venture-hub": "/venture-studio",
+        "ideas": "/venture-studio/ideas",
+        "design-thinking": "/venture-studio/design-thinking",
+        "validator": "/venture-studio/validator",
+        "lean-canvas": "/venture-studio/lean-canvas",
+        "mvp-planner": "/venture-studio/mvp-planner",
+        "pitch-builder": "/venture-studio/pitch-builder",
+        "founder-toolkit": "/venture-studio/founder-toolkit",
+        "dashboard": "/dashboard",
+        "pricing": "/pricing",
+        "business-model": "/business-model"
+    }
 
-def render_flask_page(route_path: str, height: int = 2000):
-    """
-    Renders the exact HTML generated by the Flask application,
-    inlining custom styles and JavaScript so it looks 100% identical to localhost:5000.
-    """
     with app.test_client() as client:
-        # Authenticate as pre-seeded demo student for authenticated routes
+        # Pre-authenticate as demo student so all authenticated views render with data
         client.post('/login', data={'email': 'student@pathforge.edu', 'password': 'student123'})
-        res = client.get(route_path, follow_redirects=True)
-        html = res.data.decode('utf-8')
-
-    css_content, js_content = load_static_assets()
-
-    # Inline CSS & JS
-    html = html.replace('<link rel="stylesheet" href="/static/css/custom.css">', f'<style>{css_content}</style>')
-    html = html.replace('<script src="/static/js/main.js"></script>', f'<script>{js_content}</script>')
-
-    # Convert internal links to target top or parent
-    link_map = {
-        'href="/assessment"': 'href="?page=assessment" target="_top"',
-        'href="/career-compass"': 'href="?page=career-compass" target="_top"',
-        'href="/decision-meter"': 'href="?page=decision-meter" target="_top"',
-        'href="/dashboard"': 'href="?page=dashboard" target="_top"',
-        'href="/pricing"': 'href="?page=pricing" target="_top"',
-        'href="/business-model"': 'href="?page=business-model" target="_top"',
-        'href="/venture-studio"': 'href="?page=venture-studio" target="_top"',
-        'href="/venture-studio/ideas"': 'href="?page=venture-ideas" target="_top"',
-        'href="/venture-studio/design-thinking"': 'href="?page=design-thinking" target="_top"',
-        'href="/venture-studio/validator"': 'href="?page=validator" target="_top"',
-        'href="/venture-studio/lean-canvas"': 'href="?page=lean-canvas" target="_top"',
-        'href="/venture-studio/mvp-planner"': 'href="?page=mvp-planner" target="_top"',
-        'href="/venture-studio/pitch-builder"': 'href="?page=pitch-builder" target="_top"',
-        'href="/venture-studio/founder-toolkit"': 'href="?page=founder-toolkit" target="_top"',
-        'href="/venture-studio/tracker"': 'href="?page=tracker" target="_top"',
-        'href="/billing"': 'href="?page=billing" target="_top"',
-        'href="/"': 'href="?page=home" target="_top"'
-    }
-    for old_href, new_href in link_map.items():
-        html = html.replace(old_href, new_href)
-
-    # Render inside isolated responsive component
-    components.html(html, height=height, scrolling=True)
-
-# 5. Handle URL Query Parameters (for one-click navigation)
-query_page = st.query_params.get("page", None)
-if query_page:
-    st.session_state.current_page = query_page
-
-# 6. Sleek Top Navigation Bar
-st.markdown("""
-<div class="top-nav-container">
-    <div class="brand-logo-box">
-        <div class="brand-icon">🧭</div>
-        <div>
-            <div class="brand-title">Path<span>Forge</span> <span class="brand-badge">AI Career Portal</span></div>
-        </div>
-    </div>
-    <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;">
-        Student Profile: <span style="color:#0d9488;">Aarav Sharma</span> (Computer Science, 3rd Year) &bull; <span style="color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:4px; font-weight:700;">Founder Tier</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Top Nav Menu Buttons
-col_nav = st.columns([1.1, 1.4, 1.4, 1.4, 1.4, 1.2, 1.2, 1.4, 1.2])
-
-with col_nav[0]:
-    if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == "home" else "secondary"):
-        st.session_state.current_page = "home"
-        st.query_params["page"] = "home"
-        st.rerun()
-
-with col_nav[1]:
-    if st.button("📝 Assessment", use_container_width=True, type="primary" if st.session_state.current_page == "assessment" else "secondary"):
-        st.session_state.current_page = "assessment"
-        st.query_params["page"] = "assessment"
-        st.rerun()
-
-with col_nav[2]:
-    if st.button("📊 Career Compass", use_container_width=True, type="primary" if st.session_state.current_page == "career-compass" else "secondary"):
-        st.session_state.current_page = "career-compass"
-        st.query_params["page"] = "career-compass"
-        st.rerun()
-
-with col_nav[3]:
-    if st.button("⚖️ Decision Meter", use_container_width=True, type="primary" if st.session_state.current_page == "decision-meter" else "secondary"):
-        st.session_state.current_page = "decision-meter"
-        st.query_params["page"] = "decision-meter"
-        st.rerun()
-
-with col_nav[4]:
-    if st.button("🚀 Venture Track", use_container_width=True, type="primary" if "venture" in st.session_state.current_page or st.session_state.current_page in ["design-thinking", "lean-canvas", "validator", "mvp-planner", "pitch-builder", "founder-toolkit"] else "secondary"):
-        st.session_state.current_page = "venture-studio"
-        st.query_params["page"] = "venture-studio"
-        st.rerun()
-
-with col_nav[5]:
-    if st.button("📈 Dashboard", use_container_width=True, type="primary" if st.session_state.current_page == "dashboard" else "secondary"):
-        st.session_state.current_page = "dashboard"
-        st.query_params["page"] = "dashboard"
-        st.rerun()
-
-with col_nav[6]:
-    if st.button("💳 Pricing", use_container_width=True, type="primary" if st.session_state.current_page == "pricing" else "secondary"):
-        st.session_state.current_page = "pricing"
-        st.query_params["page"] = "pricing"
-        st.rerun()
-
-with col_nav[7]:
-    if st.button("🏛️ Business Model", use_container_width=True, type="primary" if st.session_state.current_page == "business-model" else "secondary"):
-        st.session_state.current_page = "business-model"
-        st.query_params["page"] = "business-model"
-        st.rerun()
-
-with col_nav[8]:
-    if st.button("💬 AI Mentor", use_container_width=True, type="primary" if st.session_state.current_page == "ai-mentor" else "secondary"):
-        st.session_state.current_page = "ai-mentor"
-        st.query_params["page"] = "ai-mentor"
-        st.rerun()
-
-# 7. Page Content Router
-active_tab = st.session_state.current_page
-
-# ---------------------------------------------
-# PAGE 1: HOME
-# ---------------------------------------------
-if active_tab == "home":
-    render_flask_page("/", height=2450)
-
-# ---------------------------------------------
-# PAGE 2: AI ASSESSMENT
-# ---------------------------------------------
-elif active_tab == "assessment":
-    # Sub-tabs: View Full Form or Live Skill Recalculator
-    sub_col1, sub_col2 = st.columns([1, 1])
-    with sub_col1:
-        st.caption("✨ **Live Interactive Assessment Engine**: Adjust your competencies below and click 'Recalculate Career Compass' to update your live report.")
-    
-    with st.expander("⚡ Quick Skill Recalculator (1 to 10 Sliders)", expanded=False):
-        with st.form("skill_update_form"):
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                sk_py = st.slider("Python & Backend Architecture", 1.0, 10.0, 9.0, 0.5)
-                sk_fe = st.slider("Frontend & Web Development", 1.0, 10.0, 8.5, 0.5)
-            with c2:
-                sk_ml = st.slider("Data Analysis & ML", 1.0, 10.0, 8.0, 0.5)
-                sk_sys = st.slider("System Design & Cloud Basics", 1.0, 10.0, 7.5, 0.5)
-            with c3:
-                sk_prod = st.slider("Product Thinking & Empathy", 1.0, 10.0, 7.0, 0.5)
-                sk_comm = st.slider("Verbal Communication & Pitching", 1.0, 10.0, 8.0, 0.5)
-
-            p_goal = st.selectbox("Primary Career Trajectory Goal", ["High-CTC Corporate Tech Job", "Higher Studies (MS/MBA)", "Startup Venture Creation"], index=0)
+        
+        home_html = client.get('/', follow_redirects=True).data.decode('utf-8')
+        
+        views_html = []
+        captured_scripts = []
+        
+        for name, r in routes.items():
+            res = client.get(r, follow_redirects=True)
+            html = res.data.decode('utf-8')
+            m = re.search(r'<main[^>]*>(.*?)</main>', html, re.DOTALL)
+            content = m.group(1) if m else html
             
-            submit_skill = st.form_submit_button("🚀 Update & Recalculate Career Compass Report", use_container_width=True)
-            if submit_skill:
-                with app.test_client() as client:
-                    client.post('/login', data={'email': 'student@pathforge.edu', 'password': 'student123'})
-                    client.post('/assessment', data={
-                        'branch': 'Computer Science & Engineering',
-                        'year_of_study': '3rd Year',
-                        'college': 'Indian Institute of Information Technology',
-                        'interests': ['Artificial Intelligence / GenAI', 'SaaS & Cloud Web Apps'],
-                        'skill_python': sk_py,
-                        'skill_frontend': sk_fe,
-                        'skill_data': sk_ml,
-                        'skill_product': sk_prod,
-                        'skill_system': sk_sys,
-                        'skill_communication': sk_comm,
-                        'strengths': ['Rapid Prototyping', 'System Design'],
-                        'risk_appetite': 5,
-                        'stability_vs_autonomy': 6,
-                        'hours_per_week': 20,
-                        'capital_willing': 'Low (₹0 - ₹10,000)',
-                        'primary_goal': 'job' if "Corporate" in p_goal else ('higher_studies' if "Higher" in p_goal else 'startup')
-                    }, follow_redirects=True)
-                st.success("✅ Profile updated! Opening your personalized Career Compass...")
-                st.session_state.current_page = "career-compass"
-                st.rerun()
+            # Extract inline scripts (e.g., Chart.js initializers)
+            view_scripts = re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>', html, re.DOTALL)
+            for s in view_scripts:
+                s_clean = s.strip()
+                if s_clean and s_clean not in captured_scripts:
+                    captured_scripts.append(s_clean)
+                    
+            disp = "block" if name == "home" else "none"
+            views_html.append(f'<div id="view-{name}" class="page-view" style="display:{disp};">{content}</div>')
 
-    render_flask_page("/assessment", height=2300)
+    # Read and inline static assets
+    custom_css = ""
+    if os.path.exists('static/css/custom.css'):
+        with open('static/css/custom.css', 'r', encoding='utf-8') as f:
+            custom_css = f.read()
 
-# ---------------------------------------------
-# PAGE 3: CAREER COMPASS
-# ---------------------------------------------
-elif active_tab == "career-compass":
-    render_flask_page("/career-compass", height=1850)
+    main_js = ""
+    if os.path.exists('static/js/main.js'):
+        with open('static/js/main.js', 'r', encoding='utf-8') as f:
+            main_js = f.read()
 
-# ---------------------------------------------
-# PAGE 4: DECISION METER
-# ---------------------------------------------
-elif active_tab == "decision-meter":
-    render_flask_page("/decision-meter", height=1550)
+    # 1. Inline CSS
+    home_html = home_html.replace('<link rel="stylesheet" href="/static/css/custom.css">', f'<style>{custom_css}</style>')
+    
+    # 2. Inline JavaScript
+    home_html = home_html.replace('<script src="/static/js/main.js"></script>', f'<script>{main_js}</script>')
 
-# ---------------------------------------------
-# PAGE 5: VENTURE TRACK
-# ---------------------------------------------
-elif active_tab in ["venture-studio", "venture-ideas", "design-thinking", "validator", "lean-canvas", "mvp-planner", "pitch-builder", "founder-toolkit", "tracker"]:
-    # Sub-navigation for Venture Track modules
-    v_cols = st.columns(8)
-    with v_cols[0]:
-        if st.button("Hub", use_container_width=True):
-            st.session_state.current_page = "venture-studio"
-            st.rerun()
-    with v_cols[1]:
-        if st.button("1. Ideas", use_container_width=True):
-            st.session_state.current_page = "venture-ideas"
-            st.rerun()
-    with v_cols[2]:
-        if st.button("2. Design Board", use_container_width=True):
-            st.session_state.current_page = "design-thinking"
-            st.rerun()
-    with v_cols[3]:
-        if st.button("3. Validator", use_container_width=True):
-            st.session_state.current_page = "validator"
-            st.rerun()
-    with v_cols[4]:
-        if st.button("4. Lean Canvas", use_container_width=True):
-            st.session_state.current_page = "lean-canvas"
-            st.rerun()
-    with v_cols[5]:
-        if st.button("5. MVP Planner", use_container_width=True):
-            st.session_state.current_page = "mvp-planner"
-            st.rerun()
-    with v_cols[6]:
-        if st.button("6. Pitch Deck", use_container_width=True):
-            st.session_state.current_page = "pitch-builder"
-            st.rerun()
-    with v_cols[7]:
-        if st.button("7. Toolkit", use_container_width=True):
-            st.session_state.current_page = "founder-toolkit"
-            st.rerun()
+    # 3. Replace <main>...</main> with combined views
+    combined_views = '\n'.join(views_html)
+    spa_html = re.sub(r'<main[^>]*>.*?</main>', f'<main class="flex-grow">{combined_views}</main>', home_html, flags=re.DOTALL)
 
-    v_map = {
-        "venture-studio": ("/venture-studio", 1700),
-        "venture-ideas": ("/venture-studio/ideas", 1700),
-        "design-thinking": ("/venture-studio/design-thinking", 1500),
-        "validator": ("/venture-studio/validator", 1850),
-        "lean-canvas": ("/venture-studio/lean-canvas", 1600),
-        "mvp-planner": ("/venture-studio/mvp-planner", 1500),
-        "pitch-builder": ("/venture-studio/pitch-builder", 2000),
-        "founder-toolkit": ("/venture-studio/founder-toolkit", 1850),
-        "tracker": ("/venture-studio/tracker", 1600),
-    }
-    target_route, h = v_map.get(active_tab, ("/venture-studio", 1700))
-    render_flask_page(target_route, height=h)
-
-# ---------------------------------------------
-# PAGE 6: DASHBOARD
-# ---------------------------------------------
-elif active_tab == "dashboard":
-    render_flask_page("/dashboard", height=1650)
-
-# ---------------------------------------------
-# PAGE 7: PRICING
-# ---------------------------------------------
-elif active_tab == "pricing":
-    render_flask_page("/pricing", height=2000)
-
-# ---------------------------------------------
-# PAGE 8: BUSINESS MODEL
-# ---------------------------------------------
-elif active_tab == "business-model":
-    render_flask_page("/business-model", height=2100)
-
-# ---------------------------------------------
-# PAGE 9: AI MENTOR LIVE CHAT
-# ---------------------------------------------
-elif active_tab == "ai-mentor":
-    st.markdown("""
-    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:1rem; padding:1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-        <h2 style="color:#0f172a; margin-bottom:0.25rem;">💬 PathForge 24/7 AI Career Mentor</h2>
-        <p style="color:#64748b; font-size:0.9rem; margin-bottom:0;">Ask anything regarding campus placement strategies, technical interview prep (DSA / System Design), skill gap analysis, or entrepreneurship.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Render Chat History
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    # Chat Input
-    if user_query := st.chat_input("Ask your career or placement question..."):
-        st.session_state.messages.append({"role": "user", "content": user_query})
-        with st.chat_message("user"):
-            st.markdown(user_query)
-
-        # Call AI service with student context
-        profile_ctx = {
-            "branch": "Computer Science & Engineering",
-            "year_of_study": "3rd Year",
-            "target_role": "Full-Stack AI Application Engineer",
-            "goal": "job",
-            "skills": {
-                "Python & Backend": 9.0,
-                "Frontend & Web": 8.5,
-                "Data Analysis & ML": 8.0,
-                "System Design": 7.5
-            }
+    # 4. Inject global SPA Navigation router
+    spa_nav_script = """
+    <script>
+    // Global SPA Navigation Engine
+    window.navigateTo = function(viewName) {
+        console.log("Navigating to view:", viewName);
+        var views = document.querySelectorAll('.page-view');
+        views.forEach(function(el) {
+            el.style.display = 'none';
+        });
+        var target = document.getElementById('view-' + viewName);
+        if (target) {
+            target.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Re-trigger resize for responsive Chart.js rendering
+            setTimeout(function() {
+                window.dispatchEvent(new Event('resize'));
+            }, 80);
         }
-        with st.spinner("AI Mentor is analyzing your career profile..."):
-            reply = ai_service.ask_mentor(user_query, profile_ctx)
+    };
 
-        st.session_state.messages.append({"role": "assistant", "content": reply})
-        with st.chat_message("assistant"):
-            st.markdown(reply)
+    // Global Link Interception
+    document.addEventListener('DOMContentLoaded', function() {
+        var routeMap = {
+            '/': 'home',
+            '/home': 'home',
+            '/assessment': 'assessment',
+            '/career-compass': 'compass',
+            '/decision-meter': 'decision',
+            '/venture-studio': 'venture-hub',
+            '/venture-studio/ideas': 'ideas',
+            '/venture-studio/design-thinking': 'design-thinking',
+            '/venture-studio/validator': 'validator',
+            '/venture-studio/lean-canvas': 'lean-canvas',
+            '/venture-studio/mvp-planner': 'mvp-planner',
+            '/venture-studio/pitch-builder': 'pitch-builder',
+            '/venture-studio/founder-toolkit': 'founder-toolkit',
+            '/venture-studio/tracker': 'venture-hub',
+            '/dashboard': 'dashboard',
+            '/pricing': 'pricing',
+            '/business-model': 'business-model'
+        };
+
+        // Intercept clicks on links
+        document.body.addEventListener('click', function(e) {
+            var a = e.target.closest('a');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+            var cleanHref = href.replace(/\\/$/, '') || '/';
+            if (routeMap[cleanHref]) {
+                e.preventDefault();
+                window.navigateTo(routeMap[cleanHref]);
+            }
+        });
+
+        // Intercept assessment form submit
+        document.body.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Automatically switch to Career Compass report upon form submission
+            window.navigateTo('compass');
+        });
+    });
+    </script>
+    """
+
+    # Inject captured scripts and router before </body>
+    injected_scripts = spa_nav_script + "\n" + "\n".join([f"<script>{s}</script>" for s in captured_scripts])
+    spa_html = spa_html.replace('</body>', f'{injected_scripts}\n</body>')
+
+    return spa_html
+
+# 4. Render Pure Application
+app_html = get_full_application_html()
+components.html(app_html, height=2900, scrolling=True)
