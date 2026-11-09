@@ -114,6 +114,17 @@ def seed_initial_database():
         db.session.add(demo_student)
         db.session.flush()
 
+        student_sub = Subscription(
+            user_id=demo_student.id,
+            plan="founder",
+            billing_cycle="monthly",
+            status="active",
+            amount_paid=499.0,
+            payment_id="pay_student_seed",
+            order_id="order_student_seed"
+        )
+        db.session.add(student_sub)
+
         # Seed Journey Tracker
         tracker = JourneyTracker(
             user_id=demo_student.id,

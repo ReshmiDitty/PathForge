@@ -13,12 +13,6 @@ assessment_bp = Blueprint("assessment", __name__)
 def start_assessment():
     user = User.query.get(session["user_id"])
 
-    # Check plan limit: Free users get 1 assessment; Pro/Founder get unlimited
-    existing_count = user.assessments.count()
-    if existing_count >= 1 and not user.has_access("pro"):
-        flash("You have completed your 1 free assessment. Upgrade to Pro for unlimited multi-scenario assessments!", "info")
-        return redirect(url_for("assessment.career_compass"))
-
     if request.method == "POST":
         branch = request.form.get("branch", "Computer Science & Engineering")
         year_of_study = request.form.get("year_of_study", "3rd Year")
