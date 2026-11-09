@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal{% endblock %}</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              850: '#0f172a',
+              900: '#0b1120',
+              950: '#020617'
+            },
+            teal: {
+              450: '#14b8a6',
+              550: '#0d9488',
+              650: '#0f766e'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen font-sans text-slate-800 antialiased selection:bg-teal-500 selection:text-white">
+  
+  <!-- Navigation Header -->
+  {% include 'components/navbar.html' %}
+
+  <!-- Flash Messages Banner -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2">
+          {% for category, message in messages %}
+            <div class="alert-dismissible flex items-center justify-between p-4 rounded-xl border text-sm shadow-xs transition-all duration-300
+              {% if category == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+              {% elif category == 'danger' %}bg-rose-50 text-rose-800 border-rose-200
+              {% elif category == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+              {% else %}bg-sky-50 text-sky-800 border-sky-200{% endif %}">
+              <div class="flex items-center space-x-2.5">
+                {% if category == 'success' %}
+                  <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                {% elif category == 'danger' %}
+                  <svg class="w-5 h-5 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {% else %}
+                  <svg class="w-5 h-5 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Floating Contextual AI Mentor -->
+  {% include 'components/mentor_widget.html' %}
+
+  <!-- Page Footer -->
+  {% include 'components/footer.html' %}
+
+  <!-- Main JavaScript File -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

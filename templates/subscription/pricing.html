@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Pricing & Plans – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-12 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      {% if required_plan %}
+        <div class="inline-flex items-center space-x-2 bg-amber-50 text-amber-800 text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full border border-amber-300 mb-4 animate-bounce">
+          <span>🔒 The {{ required_plan.capitalize() }} Plan is required for that feature. Upgrade below!</span>
+        </div>
+      {% endif %}
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">Flexible Student-Friendly Pricing</h1>
+      <p class="mt-3 text-base text-slate-600">
+        Start free to map your career trajectory and skill-gap radar. Upgrade to unlock unlimited scenario assessments, full 6-month roadmaps, and the complete Venture Track.
+      </p>
+
+      <!-- Monthly / Yearly Billing Toggle -->
+      <div class="mt-8 inline-flex items-center bg-white p-1.5 rounded-full border border-slate-200 shadow-xs">
+        <span class="text-xs font-bold text-slate-700 px-3">Monthly</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="billing-cycle-toggle" class="sr-only peer">
+          <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+        </label>
+        <span class="text-xs font-bold text-slate-700 px-3 flex items-center space-x-1">
+          <span>Yearly</span>
+          <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-extrabold">Save ~25%</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- 3 Plan Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+      
+      <!-- Free Plan -->
+      <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Free Starter</span>
+          </div>
+          <h3 class="text-xl font-black text-slate-900">Free Tier</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-6">Essential career report & venture preview.</p>
+          
+          <div class="mb-6">
+            <div class="text-4xl font-black text-slate-900">₹0</div>
+            <span class="text-xs text-slate-400">Forever free for all students</span>
+          </div>
+
+          <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>1 Comprehensive Assessment</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Top 3 Career matches with salary range</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>3 AI Startup Idea generations / month</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Venture Studio preview & Founder Toolkit</span></li>
+            <li class="flex items-center space-x-2.5 text-slate-400"><span class="text-slate-300">✗</span><span>No Lean Canvas PDF export</span></li>
+            <li class="flex items-center space-x-2.5 text-slate-400"><span class="text-slate-300">✗</span><span>No Deep Validator or Pitch Builder</span></li>
+          </ul>
+        </div>
+
+        <div class="mt-8">
+          {% if current_user and current_user.current_plan == 'free' %}
+            <button disabled class="w-full py-3 rounded-xl bg-slate-100 text-slate-400 font-bold text-xs cursor-not-allowed">Current Active Plan</button>
+          {% else %}
+            <a href="{{ url_for('assessment.start_assessment') }}" class="block w-full text-center py-3 rounded-xl border border-slate-300 text-slate-800 font-bold text-xs hover:bg-slate-50 transition">Start Free</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Pro Student Plan -->
+      <div class="bg-white rounded-3xl p-8 border-2 border-teal-500 shadow-xl flex flex-col justify-between relative bg-teal-50/10">
+        <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-sm">
+          Most Popular
+        </span>
+
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">Pro Student</span>
+          </div>
+          <h3 class="text-xl font-black text-slate-900">Pro Tier</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-6">Complete Venture Studio & Lean Canvas PDF export.</p>
+          
+          <div class="mb-6">
+            <div class="price-monthly text-4xl font-black text-slate-900">₹199 <span class="text-xs font-normal text-slate-500">/ month</span></div>
+            <div class="price-yearly hidden text-4xl font-black text-slate-900">₹1,799 <span class="text-xs font-normal text-slate-500">/ year</span></div>
+            <span class="text-[11px] text-teal-600 font-semibold">Includes 7-day free trial</span>
+          </div>
+
+          <ul class="space-y-3 text-xs text-slate-700 border-t border-slate-100 pt-6">
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span><strong>Unlimited</strong> assessments</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span><strong>Unlimited</strong> AI Idea generations</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Design Thinking 5-Stage Sticky Board</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Lean Canvas Builder & PDF/Print Export</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>MVP Planner & 14-Day Sprint Checklist</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Founder Journey Badges Tracker</span></li>
+          </ul>
+        </div>
+
+        <div class="mt-8">
+          {% if current_user and current_user.current_plan == 'pro' %}
+            <button disabled class="w-full py-3 rounded-xl bg-teal-100 text-teal-800 font-bold text-xs cursor-not-allowed">Current Active Plan</button>
+          {% else %}
+            <a href="{{ url_for('subscription.checkout', plan='pro') }}" class="block w-full text-center py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs shadow-md shadow-teal-600/25 transition">
+              Upgrade to Pro (Razorpay / Demo)
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Founder Suite Plan -->
+      <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">Founder Suite</span>
+          </div>
+          <h3 class="text-xl font-black text-slate-900">Founder Tier</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-6">Deep validation, 10-slide deck & priority mentor.</p>
+          
+          <div class="mb-6">
+            <div class="price-monthly text-4xl font-black text-slate-900">₹499 <span class="text-xs font-normal text-slate-500">/ month</span></div>
+            <div class="price-yearly hidden text-4xl font-black text-slate-900">₹4,499 <span class="text-xs font-normal text-slate-500">/ year</span></div>
+            <span class="text-[11px] text-amber-600 font-semibold">Ultimate Venture Formation Kit</span>
+          </div>
+
+          <ul class="space-y-3 text-xs text-slate-600 border-t border-slate-100 pt-6">
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span><strong>Everything in Pro included</strong></span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span><strong>Deep Idea Validator & SWOT</strong></span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span><strong>10-Slide Investor Pitch Builder</strong></span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>60-Second Elevator Pitch Speech Script</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Priority Contextual AI Mentor Chat</span></li>
+            <li class="flex items-center space-x-2.5"><span class="text-teal-600 font-bold">✓</span><span>Indian Grant Matcher (SISFS / NIDHI)</span></li>
+          </ul>
+        </div>
+
+        <div class="mt-8">
+          {% if current_user and current_user.current_plan == 'founder' %}
+            <button disabled class="w-full py-3 rounded-xl bg-amber-100 text-amber-800 font-bold text-xs cursor-not-allowed">Current Active Plan</button>
+          {% else %}
+            <a href="{{ url_for('subscription.checkout', plan='founder') }}" class="block w-full text-center py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md transition">
+              Get Founder Suite (Razorpay / Demo)
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Feature Comparison Table -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 mb-16 max-w-5xl mx-auto overflow-x-auto">
+      <h3 class="text-lg font-bold text-slate-900 mb-6">Detailed Plan Comparison</h3>
+      
+      <table class="w-full text-xs text-left">
+        <thead>
+          <tr class="border-b border-slate-200 pb-3">
+            <th class="py-3 font-bold text-slate-700">Feature</th>
+            <th class="py-3 font-bold text-slate-700 text-center">Free (₹0)</th>
+            <th class="py-3 font-bold text-teal-700 text-center">Pro (₹199/mo)</th>
+            <th class="py-3 font-bold text-amber-700 text-center">Founder (₹499/mo)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-600">
+          <tr><td class="py-3 font-medium">Dual-Path Assessments</td><td class="text-center">1</td><td class="text-center font-bold text-teal-600">Unlimited</td><td class="text-center font-bold text-amber-600">Unlimited</td></tr>
+          <tr><td class="py-3 font-medium">Career Compass & Skill Radars</td><td class="text-center">Basic (Top 3)</td><td class="text-center">Full Radar + Roadmap</td><td class="text-center">Full Radar + Roadmap</td></tr>
+          <tr><td class="py-3 font-medium">AI Startup Idea Generations</td><td class="text-center">3 / month</td><td class="text-center font-bold text-teal-600">Unlimited</td><td class="text-center font-bold text-amber-600">Unlimited</td></tr>
+          <tr><td class="py-3 font-medium">Design Thinking 5-Stage Board</td><td class="text-center">Preview</td><td class="text-center">✓ Full</td><td class="text-center">✓ Full</td></tr>
+          <tr><td class="py-3 font-medium">Ash Maurya 9-Block Lean Canvas</td><td class="text-center">View only</td><td class="text-center">✓ Save & Edit</td><td class="text-center">✓ Save & Edit</td></tr>
+          <tr><td class="py-3 font-medium">Lean Canvas PDF & Clean Print Export</td><td class="text-center">✗</td><td class="text-center">✓ Included</td><td class="text-center">✓ Included</td></tr>
+          <tr><td class="py-3 font-medium">Deep Idea Validator & SWOT Scorecard</td><td class="text-center">✗</td><td class="text-center">✗</td><td class="text-center">✓ Included</td></tr>
+          <tr><td class="py-3 font-medium">10-Slide Investor Deck & Spoken Script</td><td class="text-center">✗</td><td class="text-center">✗</td><td class="text-center">✓ Included</td></tr>
+          <tr><td class="py-3 font-medium">Indian Startup Schemes (SISFS/NIDHI)</td><td class="text-center">Toolkit Guide</td><td class="text-center">Toolkit Guide</td><td class="text-center">✓ Deep Matcher</td></tr>
+          <tr><td class="py-3 font-medium">AI Mentor Chat Priority Support</td><td class="text-center">Standard</td><td class="text-center">Enhanced</td><td class="text-center">Priority + Memory</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Student FAQ Section -->
+    <div class="max-w-3xl mx-auto mb-12">
+      <h3 class="text-xl font-bold text-slate-900 mb-6 text-center">Frequently Asked Questions</h3>
+      
+      <div class="space-y-4 text-xs">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <strong class="text-slate-900 text-sm block mb-1">What is the "Demo Checkout" mode?</strong>
+          <p class="text-slate-600 leading-relaxed">
+            PathForge includes a built-in instant Demo Checkout simulator. If you do not have Razorpay test API keys set up, you can simply click "Pay in Demo Mode" at checkout to instantly simulate a real INR transaction and unlock features without needing any credit card or gateway credentials!
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <strong class="text-slate-900 text-sm block mb-1">How do student coupons work?</strong>
+          <p class="text-slate-600 leading-relaxed">
+            Students can enter coupon codes such as <code class="bg-slate-100 text-teal-800 font-bold px-1.5 py-0.5 rounded">STUDENT20</code> for an instant 20% discount, or <code class="bg-slate-100 text-teal-800 font-bold px-1.5 py-0.5 rounded">STARTUP50</code> for 50% off during demo presentation!
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <strong class="text-slate-900 text-sm block mb-1">Can I cancel my subscription at any time?</strong>
+          <p class="text-slate-600 leading-relaxed">
+            Yes! You can cancel your subscription with 1-click on your <a href="{{ url_for('subscription.billing') }}" class="text-teal-600 font-bold underline">Billing Page</a> at any time. Your account will automatically return to the Free plan.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

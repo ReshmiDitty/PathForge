@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Venture Studio Hub – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Top Active Venture Banner -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white mb-10 shadow-xl border border-slate-700/80">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center space-x-2 bg-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-teal-500/30 mb-3">
+            <span>Active Startup Project</span>
+          </div>
+          {% if active_idea %}
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{{ active_idea.title }}</h1>
+            <p class="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">{{ active_idea.tagline }}</p>
+            <div class="mt-4 flex flex-wrap items-center gap-3 text-xs">
+              <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">Target: {{ active_idea.target_customer }}</span>
+              <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg border border-slate-700">Complexity: {{ active_idea.complexity }}</span>
+              {% if active_idea.validation_score > 0 %}
+                <span class="bg-emerald-950 text-emerald-300 font-bold px-3 py-1 rounded-lg border border-emerald-800">Validation: {{ active_idea.validation_score }}/100 ({{ active_idea.validation_verdict }})</span>
+              {% endif %}
+            </div>
+          {% else %}
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Venture Studio Workspace</h1>
+            <p class="text-xs sm:text-sm text-slate-300 mt-2">Generate startup concepts from your skills and take them through the venture-ideation process.</p>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+          <a href="{{ url_for('venture.ideas') }}" class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition text-center">
+            {% if active_idea %}Switch / Generate Ideas{% else %}Generate Ideas{% endif %}
+          </a>
+          <a href="{{ url_for('venture.lean_canvas') }}" class="px-5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs transition text-center">
+            Open Lean Canvas
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- The 7 Venture Studio Engines -->
+    <div class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">The 7 Venture Studio Engines</h2>
+          <p class="text-xs text-slate-500">Based on the Venture Ideation & Entrepreneurship course syllabus</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- 1. Idea Generator -->
+        <a href="{{ url_for('venture.ideas') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-lg">💡</span>
+            <span class="text-xs font-bold text-slate-400 group-hover:text-teal-600">Engine 1 &rarr;</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-teal-600 transition-colors">1. Idea Generator</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Synthesizes 3-5 tailored startup ideas from your skills, interests, and branch, with problem statements and 'Why Now' catalysts.</p>
+        </a>
+
+        <!-- 2. Design Thinking Board -->
+        <a href="{{ url_for('venture.design_thinking') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-lg">📌</span>
+            <span class="text-xs font-bold text-slate-400 group-hover:text-sky-600">Engine 2 &rarr;</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-sky-600 transition-colors">2. Design Thinking Board</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Empathize, Define, Ideate, Prototype, and Test on an interactive sticky-note board with guided prompt scaffolding.</p>
+        </a>
+
+        <!-- 3. Idea Validator -->
+        <a href="{{ url_for('venture.validator') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">⚖️</span>
+            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Founder</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">3. Deep Idea Validator</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">100-point venture scorecard, Indian TAM/SAM/SOM calculation, SWOT analysis, and final GO / REFINE / PIVOT verdict.</p>
+        </a>
+
+        <!-- 4. Lean Canvas Builder -->
+        <a href="{{ url_for('venture.lean_canvas') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">📊</span>
+            <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-600">Engine 4 &rarr;</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">4. Lean Canvas Builder</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Ash Maurya's 9-block framework with 1-click AI auto-fill and high-resolution PDF/clean print view export.</p>
+        </a>
+
+        <!-- 5. MVP Planner -->
+        <a href="{{ url_for('venture.mvp_planner') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">🧪</span>
+            <span class="text-xs font-bold text-slate-400 group-hover:text-purple-600">Engine 5 &rarr;</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">5. MVP Sprint Planner</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Defines the smallest testable experiment, 3 riskiest assumptions to test, and a 2-week execution sprint calendar.</p>
+        </a>
+
+        <!-- 6. Pitch Builder -->
+        <a href="{{ url_for('venture.pitch_builder') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block">
+          <div class="flex items-center justify-between mb-4">
+            <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">🎤</span>
+            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Founder</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">6. 10-Slide Pitch Builder</h3>
+          <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">Generates standard 10-slide angel deck outline, speaker notes, executive one-pager, and a 60-second elevator speech.</p>
+        </a>
+
+        <!-- 7. Founder Toolkit -->
+        <a href="{{ url_for('venture.founder_toolkit') }}" class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover-lift group block lg:col-span-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center space-x-3">
+              <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-lg">🇮🇳</span>
+              <div>
+                <h3 class="text-base font-bold text-slate-900 group-hover:text-rose-600 transition-colors">7. Founder Toolkit: Indian Schemes, Incubators & IPR Basics</h3>
+                <p class="text-xs text-slate-500">Government grants (Startup India SISFS up to ₹50L, NIDHI-PRAYAS), top college incubators, and student patent basics.</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-slate-400 group-hover:text-rose-600">Open Toolkit &rarr;</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

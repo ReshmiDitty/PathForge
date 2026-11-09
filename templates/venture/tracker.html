@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Founder Journey Tracker – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      <div class="inline-flex items-center space-x-2 bg-teal-50 text-teal-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-teal-200/80 mb-3">
+        <span>Gamified Founder Formation</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Founder Journey Tracker</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Track your milestone progression across Ideate &rarr; Validate &rarr; Prototype &rarr; Pitch to earn student founder badges.
+      </p>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-10">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <div>
+          <span class="text-xs font-bold uppercase text-slate-500 tracking-wider">Overall Formation Progress</span>
+          <h2 class="text-2xl font-black text-slate-900 mt-1">{{ tracker.overall_progress }}% Completed</h2>
+        </div>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-teal-100 text-teal-800 self-start sm:self-auto">
+          {% if tracker.overall_progress >= 80 %}Stage: Ready for Pitching
+          {% elif tracker.overall_progress >= 60 %}Stage: Prototyping & Lean Canvas
+          {% elif tracker.overall_progress >= 40 %}Stage: Ideation & Validation
+          {% else %}Stage: Exploration & Assessment{% endif %}
+        </span>
+      </div>
+
+      <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+        <div class="bg-gradient-to-r from-teal-500 to-emerald-500 h-3 rounded-full transition-all duration-500" style="width: {{ tracker.overall_progress }}%"></div>
+      </div>
+    </div>
+
+    <!-- Badges Showcase -->
+    <div class="mb-12">
+      <h3 class="text-xl font-bold text-slate-900 mb-6">Earned & Unlocked Founder Badges</h3>
+      
+      {% set all_badges = [
+        ("Compass Explorer", "Created PathForge account and explored dual trajectories.", "🧭", "compass"),
+        ("Compass Navigator", "Completed full Dual-Path Assessment & Skill-Gap Analysis.", "🗺️", "navigator"),
+        ("Venture Ideator", "Synthesized 3-5 startup concepts and selected an active venture.", "💡", "ideator"),
+        ("Lean Architect", "Formulated a complete 9-block Ash Maurya Lean Canvas.", "📊", "architect"),
+        ("Pitch Master", "Built a 10-slide investor deck and practiced the 60s elevator pitch.", "🎤", "pitch"),
+        ("Certified Student Founder", "Reached 90%+ milestone completion across all venture modules.", "🏆", "certified")
+      ] %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for b_name, b_desc, b_icon, b_id in all_badges %}
+          {% set is_earned = b_name in tracker.badges or (b_name == 'Certified Student Founder' and tracker.overall_progress >= 90) %}
+          <div class="rounded-2xl p-6 border {% if is_earned %}bg-white border-teal-300 shadow-sm{% else %}bg-slate-100/60 border-slate-200 opacity-60{% endif %} transition flex items-start space-x-4">
+            <div class="w-12 h-12 rounded-xl {% if is_earned %}bg-teal-50 border border-teal-200 text-teal-600{% else %}bg-slate-200 text-slate-400{% endif %} flex items-center justify-center text-2xl flex-shrink-0">
+              {{ b_icon }}
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-slate-900 text-sm">{{ b_name }}</h4>
+                {% if is_earned %}
+                  <span class="text-[10px] bg-teal-100 text-teal-800 font-bold px-1.5 py-0.2 rounded">Earned</span>
+                {% else %}
+                  <span class="text-[10px] bg-slate-200 text-slate-600 font-bold px-1.5 py-0.2 rounded">Locked</span>
+                {% endif %}
+              </div>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">{{ b_desc }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 4 Phases Milestones Checklist -->
+    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-10">
+      <h3 class="text-lg font-bold text-slate-900 mb-6">4-Phase Venture Milestones Checklist</h3>
+      
+      <div class="space-y-6">
+        <!-- Phase 1: Ideate -->
+        <div class="flex items-start space-x-4">
+          <span class="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">1</span>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-900">Phase 1: Ideate & Discover</h4>
+            <p class="text-xs text-slate-500 mb-2">Complete profile assessment and evaluate problem-solution fit.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center space-x-2 text-teal-700"><span>✓</span><span>Complete Dual-Path Assessment</span></div>
+              <div class="flex items-center space-x-2 text-teal-700"><span>✓</span><span>Synthesize 3-5 Tailored Startup Ideas</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 2: Validate -->
+        <div class="flex items-start space-x-4 pt-4 border-t border-slate-100">
+          <span class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">2</span>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-900">Phase 2: Empathize & Validate</h4>
+            <p class="text-xs text-slate-500 mb-2">Post discovery sticky notes and calculate Indian TAM/SAM/SOM.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center space-x-2 text-teal-700"><span>✓</span><span>Conduct 5 Customer Empathy Notes on Design Board</span></div>
+              <div class="flex items-center space-x-2 {% if user.active_idea and user.active_idea.validation_score > 0 %}text-teal-700{% else %}text-slate-400{% endif %}">
+                <span>{% if user.active_idea and user.active_idea.validation_score > 0 %}✓{% else %}○{% endif %}</span>
+                <span>Run Idea Validator Scorecard (Score > 75)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 3: Prototype -->
+        <div class="flex items-start space-x-4 pt-4 border-t border-slate-100">
+          <span class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">3</span>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-900">Phase 3: Prototype & Lean Canvas</h4>
+            <p class="text-xs text-slate-500 mb-2">Map 9 business blocks and define riskiest assumptions.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center space-x-2 {% if user.canvases.count() > 0 %}text-teal-700{% else %}text-slate-400{% endif %}">
+                <span>{% if user.canvases.count() > 0 %}✓{% else %}○{% endif %}</span>
+                <span>Complete 9-Block Lean Canvas</span>
+              </div>
+              <div class="flex items-center space-x-2 text-teal-700"><span>✓</span><span>Define 2-Week MVP Sprint Tasks</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 4: Pitch -->
+        <div class="flex items-start space-x-4 pt-4 border-t border-slate-100">
+          <span class="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">4</span>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-900">Phase 4: Pitch & Grant Match</h4>
+            <p class="text-xs text-slate-500 mb-2">Build investor presentation and target incubation support.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div class="flex items-center space-x-2 {% if user.pitch_decks.count() > 0 %}text-teal-700{% else %}text-slate-400{% endif %}">
+                <span>{% if user.pitch_decks.count() > 0 %}✓{% else %}○{% endif %}</span>
+                <span>Generate 10-Slide Investor Deck</span>
+              </div>
+              <div class="flex items-center space-x-2 text-teal-700"><span>✓</span><span>Review SISFS & NIDHI-PRAYAS Schemes</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

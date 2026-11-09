@@ -1,0 +1,74 @@
+<!-- Floating AI Mentor Toggle Button -->
+<div class="fixed bottom-6 right-6 z-40">
+  <button id="mentor-toggle-btn" class="flex items-center space-x-2.5 bg-gradient-to-r from-slate-900 to-teal-800 text-white px-4 py-3 rounded-full shadow-lg shadow-teal-900/25 hover:shadow-xl hover:scale-105 transition-all duration-200 border border-teal-500/30">
+    <div class="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-slate-950 font-bold text-xs animate-pulse">
+      ✨
+    </div>
+    <span class="text-sm font-semibold tracking-tight">AI Mentor</span>
+  </button>
+</div>
+
+<!-- Floating AI Mentor Drawer -->
+<div id="mentor-drawer" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl border-l border-slate-200 z-50 transform translate-x-full invisible transition-all duration-300 flex flex-col">
+  
+  <!-- Drawer Header -->
+  <div class="p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-slate-950 font-bold text-sm shadow">
+        ⚡
+      </div>
+      <div>
+        <h3 class="font-bold text-sm tracking-tight">PathForge AI Career Mentor</h3>
+        <p class="text-[11px] text-teal-300 flex items-center space-x-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-ping"></span>
+          <span>Online &bull; Career Intelligence</span>
+        </p>
+      </div>
+    </div>
+    <button id="mentor-close-btn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Quick Context Indicator -->
+  <div class="bg-teal-50 px-4 py-2 border-b border-teal-100 flex items-center justify-between text-[11px] text-teal-800">
+    <span>Student: <strong>{{ current_user.name if current_user else 'Guest Student' }}</strong></span>
+    <span class="bg-teal-100/80 px-2 py-0.5 rounded text-teal-700 font-semibold">{{ current_user.current_plan.capitalize() if current_user else 'Free' }}</span>
+  </div>
+
+  <!-- Quick Prompt Pills -->
+  <div class="p-3 bg-slate-50 border-b border-slate-200 overflow-x-auto whitespace-nowrap scrollbar-none flex space-x-2">
+    <button type="button" class="mentor-pill text-xs bg-white text-slate-700 hover:text-teal-700 hover:bg-teal-50 px-2.5 py-1 rounded-full border border-slate-200 shadow-xs transition">Campus placement interview prep?</button>
+    <button type="button" class="mentor-pill text-xs bg-white text-slate-700 hover:text-teal-700 hover:bg-teal-50 px-2.5 py-1 rounded-full border border-slate-200 shadow-xs transition">How to close my AI/ML skill-gap?</button>
+    <button type="button" class="mentor-pill text-xs bg-white text-slate-700 hover:text-teal-700 hover:bg-teal-50 px-2.5 py-1 rounded-full border border-slate-200 shadow-xs transition">Top in-demand tech roles & CTC in 2026?</button>
+    <button type="button" class="mentor-pill text-xs bg-white text-slate-700 hover:text-teal-700 hover:bg-teal-50 px-2.5 py-1 rounded-full border border-slate-200 shadow-xs transition">Job vs Higher Studies vs Venture advice?</button>
+  </div>
+
+  <!-- Messages Scroll Area -->
+  <div id="mentor-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm">
+    <div class="flex justify-start mb-3">
+      <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-tl-none px-4 py-3 max-w-[88%] text-sm shadow-xs">
+        <p class="font-semibold text-slate-900 mb-1">Welcome to PathForge AI Career Mentor! 🎯</p>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          I am your personal AI advisor for career guidance, placement preparation, and skill intelligence. Ask me about closing skill gaps, choosing target roles, technical interview tips, or exploring our optional venture creation track!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Input Bar -->
+  <div class="p-3 border-t border-slate-200 bg-white">
+    <div class="flex items-center space-x-2">
+      <textarea id="mentor-input" rows="1" placeholder="Ask about career, Lean Canvas, grants..." class="flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"></textarea>
+      <button id="mentor-send-btn" class="bg-teal-600 hover:bg-teal-700 text-white p-2.5 rounded-xl shadow-xs transition flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+

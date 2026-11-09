@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-850 text-white pt-20 pb-28">
+  <!-- Subtle decorative grid & glowing radial background -->
+  <div class="absolute inset-0 bg-[radial-gradient(#14b8a6_1px,transparent_1px)] [background-size:24px_24px] opacity-15"></div>
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    
+    <!-- AI Portal Badge -->
+    <div class="inline-flex items-center space-x-2 bg-teal-900/60 border border-teal-500/40 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm shadow-inner">
+      <span class="flex h-2 w-2 rounded-full bg-teal-400 animate-pulse"></span>
+      <span class="text-xs font-semibold tracking-wide text-teal-200">Next-Gen AI Career Guidance & Skills Intelligence</span>
+    </div>
+
+    <!-- Main Headline -->
+    <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+      Discover your ideal career.<br>
+      <span class="bg-gradient-to-r from-teal-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">Powered by Precision AI.</span>
+    </h1>
+
+    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-slate-300 font-normal leading-relaxed mb-10">
+      Stop guessing your professional future. <strong class="text-white font-semibold">PathForge is an AI-Enabled Career Guidance Portal</strong> that evaluates your academic discipline, core skills, and passions to deliver personalized career pathways, diagnose your exact skill gaps with radar benchmarks, and build actionable roadmaps to top industry placements.
+    </p>
+
+    <!-- CTAs -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+      <a href="{{ url_for('assessment.start_assessment') }}" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-base shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2">
+        <span>Start AI Career Assessment (Free)</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </a>
+      {% if not current_user %}
+        <a href="{{ url_for('auth.login') }}" class="w-full sm:w-auto px-6 py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-base hover:text-white transition-all flex items-center justify-center space-x-2">
+          <span>View Sample Career Report</span>
+        </a>
+      {% else %}
+        <a href="{{ url_for('main.dashboard') }}" class="w-full sm:w-auto px-6 py-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-base hover:text-white transition-all flex items-center justify-center space-x-2">
+          <span>Open My Career Dashboard</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Career Guidance Preview Card -->
+    <div class="max-w-4xl mx-auto bg-slate-800/70 backdrop-blur-md rounded-2xl border border-slate-700/80 p-6 sm:p-8 shadow-2xl text-left">
+      <div class="flex flex-col md:flex-row items-stretch gap-6">
+        
+        <!-- Primary Track: Corporate & Tech Career Compass -->
+        <div class="flex-1 rounded-xl bg-slate-900/90 border-2 border-teal-500/80 p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-400 bg-teal-950 px-2.5 py-0.5 rounded-full border border-teal-800">Primary Career Track</span>
+            <span class="text-xs font-extrabold bg-teal-500 text-slate-950 px-2 py-0.5 rounded font-mono">94% Match</span>
+          </div>
+          <h3 class="text-xl font-black text-white mb-1">Full-Stack AI Application Engineer</h3>
+          <p class="text-xs text-slate-300 mb-4">India CTC: ₹12 - ₹28 LPA &bull; Skill-Gap Radar Analysis</p>
+          <div class="space-y-2 text-xs text-slate-300">
+            <div class="flex items-center space-x-2"><span class="text-teal-400 font-bold">✓</span><span>AI Skill-Gap Radar benchmarks against target roles</span></div>
+            <div class="flex items-center space-x-2"><span class="text-teal-400 font-bold">✓</span><span>6-Month step-by-step upskilling roadmap</span></div>
+            <div class="flex items-center space-x-2"><span class="text-teal-400 font-bold">✓</span><span>Curated industry certifications (AWS, DeepLearning.AI)</span></div>
+          </div>
+        </div>
+
+        <!-- Optional Dual Track: Venture Creation -->
+        <div class="flex-1 rounded-xl bg-slate-900/60 border border-slate-700/60 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Bonus: Venture Track</span>
+            <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full border border-slate-700">Founder Readiness</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-200 mb-1">Entrepreneurship & Innovation</h3>
+          <p class="text-xs text-slate-400 mb-4">Turn career skills into a startup venture</p>
+          <div class="space-y-2 text-xs text-slate-400">
+            <div class="flex items-center space-x-2"><span class="text-emerald-400">✓</span><span>Synthesize startup ideas from your technical skills</span></div>
+            <div class="flex items-center space-x-2"><span class="text-emerald-400">✓</span><span>Interactive Design Thinking board & 9-Block Lean Canvas</span></div>
+            <div class="flex items-center space-x-2"><span class="text-emerald-400">✓</span><span>Indian grant matching (SISFS up to ₹50L, NIDHI-PRAYAS)</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 3-Step "How It Works" Section -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Our Methodology</h2>
+      <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">How PathForge Guides Your Career Trajectory</p>
+      <p class="mt-4 text-base text-slate-600">Built on data-driven skill mapping, labor market telemetry, and cognitive psychometrics to help you secure top roles.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- Step 1 -->
+      <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md shadow-teal-600/20">
+          1
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-3">AI Aptitude & Skill Mapping</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Input your engineering branch, current technical proficiencies, work style strengths, and professional ambitions in an intuitive multi-step assessment.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md shadow-slate-900/20">
+          2
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-3">Career Compass & Radars</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Explore top 3–5 matched career roles with verified salary benchmarks (LPA) and diagnostic radar charts showing your exact competencies against industry hiring bars.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200/80 hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 text-white flex items-center justify-center font-bold text-lg mb-6 shadow-md shadow-teal-600/20">
+          3
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-3">Actionable Execution & Roadmap</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Follow a structured 6-month readiness roadmap with curated certifications, plus access our 24/7 AI Mentor for placement mock interviews and career advice.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Core Career Guidance Feature Highlights -->
+<section class="py-20 bg-slate-50 border-t border-slate-200/80">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Portal Capabilities</h2>
+      <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Engineered for Student Career Success</p>
+      <p class="mt-4 text-base text-slate-600">Comprehensive AI tools to help engineering and management students land high-paying roles.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Card 1: Predictive Career Matcher -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold mb-4">🎯</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">Predictive Career Matcher</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">Evaluates your skills against 15+ in-demand disciplines (Full-Stack AI, DevOps, FinTech, Cybersecurity, Product Management) with match percentages.</p>
+      </div>
+
+      <!-- Card 2: Skill-Gap Radar Analysis -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold mb-4">📊</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">Diagnostic Skill-Gap Radars</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">Interactive multi-axis radar charts (Chart.js) that immediately pinpoint the specific technical and analytical gaps between your profile and target job descriptions.</p>
+      </div>
+
+      <!-- Card 3: 6-Month Action Roadmaps -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold mb-4">🗺️</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">6-Month Career Roadmaps</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">Clear month-by-month sprint guides covering core foundations, real-world portfolio capstones, and industry certifications (AWS, DeepLearning.AI, Google).</p>
+      </div>
+
+      <!-- Card 4: AI Career Mentor -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold mb-4">💬</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">Contextual AI Career Mentor</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">Interactive 24/7 AI mentor that knows your profile, branch, and target roles, providing on-demand guidance for interviews, resume strategy, and career pivots.</p>
+      </div>
+
+      <!-- Card 5: Decision Meter -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold mb-4">⚖️</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">Pathway Decision Meter</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">Objective algorithmic evaluation comparing your readiness for Corporate / Tech Placement, Higher Education (MS/MBA), and Entrepreneurship.</p>
+      </div>
+
+      <!-- Card 6: Venture Studio Track -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover-lift">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold mb-4">🚀</div>
+        <h4 class="text-base font-bold text-slate-900 mb-2">Dual-Path Venture Track</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">For aspiring founders: convert your career competencies into a validated startup with Design Thinking, Lean Canvas, and Indian grant matching.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Pricing Preview Section -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-14">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Student Access Plans</h2>
+      <p class="text-3xl font-extrabold text-slate-900 tracking-tight">Affordable Plans for Every Student</p>
+      <p class="mt-3 text-sm text-slate-600">Start free to explore your top career match and roadmap. Upgrade to unlock unlimited scenario assessments and the complete Venture Track.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      
+      <!-- Free -->
+      <div class="rounded-2xl p-6 border border-slate-200 bg-white shadow-xs flex flex-col justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Free Career Starter</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-4">Essential career report & skill match.</p>
+          <div class="text-3xl font-extrabold text-slate-900 mb-6">₹0 <span class="text-xs font-normal text-slate-500">/ forever</span></div>
+          <ul class="space-y-2.5 text-xs text-slate-600">
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>1 AI Career Assessment</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Top 3 Career matches with CTC range</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Basic 6-Month Roadmap & certifications</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>AI Mentor Chat & Decision Meter</span></li>
+          </ul>
+        </div>
+        <a href="{{ url_for('assessment.start_assessment') }}" class="mt-8 block w-full text-center py-2.5 rounded-xl border border-slate-300 text-slate-800 font-semibold text-xs hover:bg-slate-50 transition">Get Started Free</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="rounded-2xl p-6 border-2 border-teal-500 bg-teal-50/20 shadow-md flex flex-col justify-between relative">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm">Recommended</span>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Pro Career & Venture</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-4">Unlimited assessments, full radars & venture studio.</p>
+          <div class="text-3xl font-extrabold text-slate-900 mb-6">₹199 <span class="text-xs font-normal text-slate-500">/ month</span></div>
+          <ul class="space-y-2.5 text-xs text-slate-700">
+            <li class="flex items-center space-x-2"><span class="text-teal-600 font-bold">✓</span><span><strong>Unlimited</strong> AI Career assessments</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600 font-bold">✓</span><span>Full Skill-Gap Radar benchmarks</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600 font-bold">✓</span><span>Complete 6-Month Upskilling Roadmap</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600 font-bold">✓</span><span>Full Venture Studio & Lean Canvas PDF export</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600 font-bold">✓</span><span>Interactive Design Thinking 5-Stage Board</span></li>
+          </ul>
+        </div>
+        <a href="{{ url_for('subscription.checkout', plan='pro') }}" class="mt-8 block w-full text-center py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition">Upgrade to Pro</a>
+      </div>
+
+      <!-- Founder -->
+      <div class="rounded-2xl p-6 border border-slate-200 bg-white shadow-xs flex flex-col justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Founder & Placement Elite</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-4">Deep validation, 10-slide deck & priority mentor.</p>
+          <div class="text-3xl font-extrabold text-slate-900 mb-6">₹499 <span class="text-xs font-normal text-slate-500">/ month</span></div>
+          <ul class="space-y-2.5 text-xs text-slate-600">
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Everything in Pro included</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Deep Idea Validator & SWOT (TAM/SAM/SOM)</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>10-Slide Investor Deck & Spoken Script</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Priority AI Career & Placement Mentor</span></li>
+            <li class="flex items-center space-x-2"><span class="text-teal-600">✓</span><span>Indian Grant Matcher (SISFS, NIDHI)</span></li>
+          </ul>
+        </div>
+        <a href="{{ url_for('subscription.checkout', plan='founder') }}" class="mt-8 block w-full text-center py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition">Get Elite Access</a>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-10">
+      <p class="text-xs text-slate-500">
+        Student discount available! Enter coupon <code class="bg-slate-100 text-teal-800 px-1.5 py-0.5 rounded font-mono font-bold">STUDENT20</code> at checkout for 20% off.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="py-16 bg-slate-900 text-white text-center">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-bold tracking-tight mb-4">Ready to accelerate your career trajectory?</h2>
+    <p class="text-slate-300 text-sm max-w-xl mx-auto mb-8">Take the 3-minute AI Career Assessment and unlock your skill-gap report and roadmap immediately.</p>
+    <a href="{{ url_for('assessment.start_assessment') }}" class="inline-flex items-center space-x-2 px-8 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-teal-500/25 transition">
+      <span>Begin Free Career Assessment</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Pathway Decision Meter – PathForge AI Portal{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      <div class="inline-flex items-center space-x-2 bg-teal-50 text-teal-800 text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full border border-teal-200/80 mb-3">
+        <span>AI Career Pathway Evaluation</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Career Trajectory & Pathway Decision Meter</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        AI-driven evaluation balancing your readiness across Corporate & Tech Industry Careers, Higher Education (MS/MBA), and Entrepreneurial Innovation.
+      </p>
+    </div>
+
+    <!-- 3 Big Trajectory Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      
+      <!-- Path 1: Corporate & High-Tech Careers (Primary Highlight) -->
+      <div class="bg-white rounded-3xl p-6 border-2 border-teal-500 shadow-lg relative overflow-hidden bg-teal-50/10">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-100/80 px-2.5 py-0.5 rounded-full font-mono">Pathway 1 &bull; Primary</span>
+          <span class="text-xs font-bold bg-teal-100 text-teal-800 px-2.5 py-0.5 rounded">High CTC Placement</span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Corporate & Tech Job</h3>
+        <p class="text-xs text-slate-500 mb-6">Structured career ladders, rapid CTC growth, and deep industry mentorship.</p>
+        
+        <div class="flex items-baseline space-x-2 mb-2">
+          <span class="text-5xl font-black text-teal-600">{{ decision.job_score }}</span>
+          <span class="text-xs font-bold text-slate-400">/ 100</span>
+        </div>
+        
+        <div class="w-full bg-teal-100 rounded-full h-2.5 mt-4 overflow-hidden">
+          <div class="bg-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ decision.job_score }}%"></div>
+        </div>
+        <span class="text-[11px] font-semibold text-teal-700 mt-2 block">Top Industry Placement Readiness</span>
+      </div>
+
+      <!-- Path 2: Higher Studies & Advanced Research -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pathway 2</span>
+          <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded">MS / MBA / Research</span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Higher Studies</h3>
+        <p class="text-xs text-slate-500 mb-6">Deep specialization, global university mobility, and high credential equity.</p>
+        
+        <div class="flex items-baseline space-x-2 mb-2">
+          <span class="text-5xl font-black text-indigo-600">{{ decision.higher_studies_score }}</span>
+          <span class="text-xs font-bold text-slate-400">/ 100</span>
+        </div>
+        
+        <div class="w-full bg-slate-100 rounded-full h-2.5 mt-4 overflow-hidden">
+          <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ decision.higher_studies_score }}%"></div>
+        </div>
+        <span class="text-[11px] font-semibold text-indigo-700 mt-2 block">Graduate Specialization Aptitude</span>
+      </div>
+
+      <!-- Path 3: Entrepreneurship & Venture Track (Optional Secondary Route) -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pathway 3 &bull; Optional</span>
+          <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded">Startup Innovation</span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Venture Creation</h3>
+        <p class="text-xs text-slate-500 mb-6">Autonomy, product innovation, building your own venture from skills.</p>
+        
+        <div class="flex items-baseline space-x-2 mb-2">
+          <span class="text-5xl font-black text-slate-800">{{ decision.venture_score }}</span>
+          <span class="text-xs font-bold text-slate-400">/ 100</span>
+        </div>
+        
+        <div class="w-full bg-slate-100 rounded-full h-2.5 mt-4 overflow-hidden">
+          <div class="bg-emerald-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ decision.venture_score }}%"></div>
+        </div>
+        <span class="text-[11px] font-semibold text-emerald-700 mt-2 block">Founder Innovation Readiness</span>
+      </div>
+
+    </div>
+
+    <!-- Comparative Breakdown Chart & Career Strategic Advisory -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+      
+      <!-- Chart.js Visualization (7 cols) -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+        <h3 class="text-base font-bold text-slate-900 mb-1">Comparative Pathway Readiness</h3>
+        <p class="text-xs text-slate-500 mb-6">Benchmarked across your technical competencies, problem solving, and career goals.</p>
+        
+        <div class="h-64 relative">
+          <canvas id="triPathChart"></canvas>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+          {% for label, val in decision.breakdown.items() %}
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <span class="text-[11px] text-slate-500 block truncate">{{ label }}</span>
+              <span class="text-sm font-bold text-slate-800">{{ val }}%</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Strategic Career Guidance Advisory (5 cols) -->
+      <div class="lg:col-span-5 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl">
+        <div>
+          <div class="inline-flex items-center space-x-1.5 bg-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-teal-500/30 mb-4">
+            <span>AI Career Guidance Advisory</span>
+          </div>
+          
+          <h3 class="text-xl font-bold tracking-tight mb-2">{{ decision.verdict_title }}</h3>
+          <p class="text-xs text-slate-300 leading-relaxed mb-6">
+            {{ decision.recommendation }}
+          </p>
+
+          <div class="space-y-3 p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 text-xs">
+            <h4 class="font-bold text-teal-300 uppercase tracking-wider text-[11px]">Next Career Milestones:</h4>
+            <div class="flex items-start space-x-2">
+              <span class="text-teal-400 font-bold">1.</span>
+              <span class="text-slate-200">Review your Skill-Gap Radar benchmarks on the <strong>Career Compass</strong>.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="text-teal-400 font-bold">2.</span>
+              <span class="text-slate-200">Complete month 1-2 upskilling in your 6-month career readiness roadmap.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+              <span class="text-teal-400 font-bold">3.</span>
+              <span class="text-slate-200">Prepare for technical placement interviews with our 24/7 AI Career Mentor.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
+          <a href="{{ url_for('assessment.career_compass') }}" class="flex-1 text-center py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition">
+            Open Career Compass &rarr;
+          </a>
+          <a href="{{ url_for('venture.hub') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition">
+            Venture Track
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('triPathChart');
+  if (!ctx) return;
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Corporate & Tech Job', 'Higher Studies (MS/MBA)', 'Venture Creation'],
+      datasets: [{
+        label: 'Readiness Score (out of 100)',
+        data: [{{ decision.job_score }}, {{ decision.higher_studies_score }}, {{ decision.venture_score }}],
+        backgroundColor: [
+          'rgba(13, 148, 136, 0.95)',
+          'rgba(79, 70, 229, 0.85)',
+          'rgba(16, 185, 129, 0.75)'
+        ],
+        borderRadius: 8,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 20 },
+          grid: { color: '#f1f5f9' }
+        },
+        x: {
+          grid: { display: false }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

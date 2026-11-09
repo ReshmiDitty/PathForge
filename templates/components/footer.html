@@ -1,0 +1,66 @@
+<footer class="bg-white border-t border-slate-200 mt-20 pt-12 pb-8 text-slate-600 text-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      
+      <!-- Brand & Mission -->
+      <div class="md:col-span-1 space-y-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-teal-400 font-bold text-sm">PF</div>
+          <span class="text-lg font-bold text-slate-900">PathForge</span>
+        </div>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          The Next-Generation AI-Enabled Career Guidance Portal helping college students and graduates navigate high-trajectory career pathways, diagnose skill gaps with precision radar charts, and accelerate placement success.
+        </p>
+        <div class="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded inline-block border border-teal-200/60">
+          AI Career Guidance & Skills Intelligence
+        </div>
+      </div>
+
+      <!-- Quick Links: Career Guidance -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-900 mb-3">AI Career Tools</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="{{ url_for('assessment.start_assessment') }}" class="hover:text-teal-600 transition">AI Career Assessment</a></li>
+          <li><a href="{{ url_for('assessment.career_compass') }}" class="hover:text-teal-600 transition">Career Compass & Radars</a></li>
+          <li><a href="{{ url_for('assessment.decision_meter') }}" class="hover:text-teal-600 transition">Pathway Decision Meter</a></li>
+          <li><a href="{{ url_for('main.dashboard') }}" class="hover:text-teal-600 transition">Student Career Dashboard</a></li>
+        </ul>
+      </div>
+
+      <!-- Optional Venture Track -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-900 mb-3">Innovation & Venture Track</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="{{ url_for('venture.hub') }}" class="hover:text-teal-600 transition">Venture Studio Overview</a></li>
+          <li><a href="{{ url_for('venture.ideas') }}" class="hover:text-teal-600 transition">Idea Generator from Skills</a></li>
+          <li><a href="{{ url_for('venture.design_thinking') }}" class="hover:text-teal-600 transition">Design Thinking Board (5 Stages)</a></li>
+          <li><a href="{{ url_for('venture.lean_canvas') }}" class="hover:text-teal-600 transition">Ash Maurya 9-Block Lean Canvas</a></li>
+          <li><a href="{{ url_for('venture.founder_toolkit') }}" class="hover:text-teal-600 transition">Indian Startup Grants (SISFS / NIDHI)</a></li>
+        </ul>
+      </div>
+
+      <!-- Platform & Tech -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-900 mb-3">Platform Architecture</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="{{ url_for('main.business_model') }}" class="hover:text-teal-600 transition font-medium text-teal-700">Platform Business Architecture</a></li>
+          <li><a href="{{ url_for('subscription.pricing') }}" class="hover:text-teal-600 transition">Student Pricing & Coupon Support</a></li>
+          <li>
+            <div class="mt-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500">
+              <span class="font-semibold text-slate-700 block">AI Engine Status:</span>
+              <span class="text-emerald-700">● Predictive Career & Skill Intelligence Active</span><br>
+              <span class="text-teal-700">● 24/7 AI Career Mentor Online</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Line -->
+    <div class="border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+      <p>&copy; 2026 PathForge – AI-Enabled Career Guidance & Skills Intelligence Portal.</p>
+      <p class="mt-2 sm:mt-0">Built for College Students, Engineering Departments & Placement Cells</p>
+    </div>
+  </div>
+</footer>

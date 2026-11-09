@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Career Compass Report – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header Banner -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between pb-8 mb-8 border-b border-slate-200">
+      <div>
+        <div class="inline-flex items-center space-x-2 bg-teal-50 text-teal-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-teal-200/80 mb-2">
+          <span>AI Career Guidance & Skill Intelligence</span>
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Your Career Trajectory & Skill-Gap Analysis</h1>
+        <p class="mt-1 text-xs text-slate-600">
+          Student: <strong>{{ user.name }}</strong> &bull; Major: <strong>{{ assessment.branch }}</strong> ({{ assessment.year_of_study }})
+        </p>
+      </div>
+
+      <div class="mt-4 md:mt-0 flex items-center space-x-3">
+        <a href="{{ url_for('assessment.decision_meter') }}" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 text-xs font-bold transition flex items-center space-x-1.5 shadow-xs">
+          <span>Pathway Decision Meter</span>
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <a href="{{ url_for('venture.hub') }}" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm flex items-center space-x-1.5">
+          <span>Venture Track (Optional) &rarr;</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Grid: Top Career & Skill Gap Radar Chart -->
+    {% if top_career %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+      
+      <!-- Top Career Highlight (7 cols) -->
+      <div class="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md">#1 Match Recommendation</span>
+            <span class="text-sm font-extrabold text-teal-700 bg-teal-100/80 px-3 py-1 rounded-full">{{ top_career.match_percentage }}% Match</span>
+          </div>
+
+          <h2 class="text-2xl font-black text-slate-900 mb-2">{{ top_career.title }}</h2>
+          <p class="text-xs text-slate-600 mb-6 leading-relaxed">{{ top_career.description }}</p>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <span class="text-[11px] font-semibold text-slate-500 block">Typical India CTC</span>
+              <span class="text-base font-extrabold text-slate-900">{{ top_career.salary_range }}</span>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <span class="text-[11px] font-semibold text-slate-500 block">Industry Demand</span>
+              <span class="text-xs font-bold text-emerald-700 mt-1 inline-block">{{ top_career.market_demand }}</span>
+            </div>
+          </div>
+
+          <!-- 6-Month Roadmap Preview -->
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3">6-Month Career Readiness Sprint</h4>
+          <div class="space-y-3 mb-6">
+            {% for step in top_career.roadmap_6_months %}
+              <div class="flex items-start space-x-3 text-xs">
+                <span class="px-2 py-0.5 rounded font-bold bg-slate-100 text-slate-700 flex-shrink-0">{{ step.month }}</span>
+                <div>
+                  <strong class="text-slate-900 block">{{ step.focus }}</strong>
+                  <span class="text-slate-500 text-[11px]">{{ step.details }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- The Venture Bridge Card -->
+        <div class="mt-4 p-4 rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 text-xs">
+          <div class="flex items-center space-x-2 text-teal-800 font-bold mb-1">
+            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>The Venture Bridge: How to Monetize as a Founder</span>
+          </div>
+          <p class="text-teal-900 leading-relaxed">{{ top_career.venture_bridge }}</p>
+        </div>
+      </div>
+
+      <!-- Skill-Gap Radar Chart (5 cols) -->
+      <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col items-center justify-between">
+        <div class="w-full text-center mb-4">
+          <h3 class="text-sm font-bold text-slate-900">Skill-Gap Radar Chart</h3>
+          <p class="text-[11px] text-slate-500">Your Assessment vs Industry Target Benchmark</p>
+        </div>
+
+        <div class="w-full max-w-sm aspect-square relative flex items-center justify-center">
+          <canvas id="radarSkillChart"></canvas>
+        </div>
+
+        <div class="w-full mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-500 flex justify-around">
+          <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-teal-500 inline-block"></span><span>Your Baseline</span></span>
+          <span class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span><span>Target Benchmark</span></span>
+        </div>
+      </div>
+
+    </div>
+    {% endif %}
+
+    <!-- Top Alternate Careers Section -->
+    <div class="mb-12">
+      <h3 class="text-xl font-bold text-slate-900 mb-6">Additional Matched Career Trajectories</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for c in careers[1:4] %}
+          <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between hover-lift">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">{{ c.category }}</span>
+                <span class="text-xs font-bold text-teal-600">{{ c.match_percentage }}% Match</span>
+              </div>
+              <h4 class="text-base font-bold text-slate-900 mb-1">{{ c.title }}</h4>
+              <p class="text-[11px] text-slate-500 mb-4">{{ c.salary_range }} &bull; {{ c.market_demand }}</p>
+              <p class="text-xs text-slate-600 line-clamp-3 mb-4">{{ c.description }}</p>
+            </div>
+            
+            <div class="pt-4 border-t border-slate-100">
+              <span class="text-[11px] font-bold text-slate-700 block mb-1">Recommended Certification:</span>
+              <span class="text-xs text-teal-700 font-medium">{{ c.certifications[0] }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Optional Venture Track Switcher -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-850 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center justify-between border border-slate-700/60">
+      <div class="mb-6 md:mb-0 max-w-xl">
+        <span class="text-xs font-bold uppercase tracking-wider text-teal-400 block mb-1">Optional Innovation Module</span>
+        <h3 class="text-xl font-bold tracking-tight">Interested in Entrepreneurship alongside your career?</h3>
+        <p class="text-xs text-slate-300 mt-2">Explore our optional Venture Studio track to learn how your technical competencies can also be developed into a startup concept using Design Thinking and Lean Canvas frameworks.</p>
+      </div>
+      <a href="{{ url_for('venture.hub') }}" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-600 transition flex-shrink-0">
+        Explore Venture Track &rarr;
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('radarSkillChart');
+  if (!ctx) return;
+
+  const labels = {{ radar_labels | safe }};
+  const userData = {{ user_scores | safe }};
+  const targetData = {{ target_scores | safe }};
+
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Your Baseline',
+          data: userData,
+          fill: true,
+          backgroundColor: 'rgba(13, 148, 136, 0.25)',
+          borderColor: 'rgb(13, 148, 136)',
+          pointBackgroundColor: 'rgb(13, 148, 136)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgb(13, 148, 136)'
+        },
+        {
+          label: 'Target Benchmark',
+          data: targetData,
+          fill: true,
+          backgroundColor: 'rgba(148, 163, 184, 0.2)',
+          borderColor: 'rgb(148, 163, 184)',
+          pointBackgroundColor: 'rgb(148, 163, 184)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgb(148, 163, 184)'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: { display: false, stepSize: 20 },
+          pointLabels: {
+            font: { size: 10, family: 'Inter', weight: 600 },
+            color: '#334155'
+          },
+          grid: { color: '#e2e8f0' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Billing & Subscriptions – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="pb-8 mb-8 border-b border-slate-200">
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Billing & Subscriptions</h1>
+      <p class="mt-1 text-xs text-slate-600">Manage your PathForge plan, review invoices, and customize billing preferences.</p>
+    </div>
+
+    <!-- Current Plan Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-10">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Current Subscription</span>
+          <div class="flex items-center space-x-3 mt-2">
+            <h2 class="text-2xl font-black text-slate-900">{{ user.current_plan.capitalize() }} Plan</h2>
+            <span class="text-xs font-extrabold px-3 py-0.5 rounded-full 
+              {% if user.current_plan == 'founder' %}bg-amber-100 text-amber-800
+              {% elif user.current_plan == 'pro' %}bg-teal-100 text-teal-800
+              {% else %}bg-slate-100 text-slate-700{% endif %}">
+              Active
+            </span>
+          </div>
+          
+          {% if active_sub and active_sub.is_active %}
+            <p class="text-xs text-slate-500 mt-2">
+              Next Renewal: <strong>{{ active_sub.renewal_date.strftime('%B %d, %Y') }}</strong> ({{ active_sub.days_remaining }} days remaining) &bull; {{ active_sub.billing_cycle.capitalize() }} billing
+            </p>
+          {% else %}
+            <p class="text-xs text-slate-500 mt-2">
+              Free forever plan with basic assessment report and 3 AI idea generations per month.
+            </p>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="{{ url_for('subscription.pricing') }}" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition">
+            {% if user.current_plan == 'free' %}Upgrade to Pro / Founder{% else %}Change Plan{% endif %}
+          </a>
+
+          {% if active_sub and active_sub.is_active %}
+            <form method="POST" action="{{ url_for('subscription.cancel_subscription') }}" onsubmit="return confirm('Are you sure you want to cancel your paid subscription? You will return to the Free plan.')">
+              <button type="submit" class="px-4 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-xs transition">
+                Cancel Subscription
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoices & Transaction History -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+      <h3 class="text-base font-bold text-slate-900 mb-4">Payment Invoices & Receipts</h3>
+
+      {% if invoices %}
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead>
+              <tr class="border-b border-slate-200 pb-3 text-slate-500 font-bold">
+                <th class="py-3">Invoice #</th>
+                <th class="py-3">Date</th>
+                <th class="py-3">Plan / Description</th>
+                <th class="py-3">Amount</th>
+                <th class="py-3">Method</th>
+                <th class="py-3 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              {% for inv in invoices %}
+                <tr>
+                  <td class="py-3 font-mono font-bold text-slate-900">{{ inv.invoice_number }}</td>
+                  <td class="py-3 text-slate-500">{{ inv.date.strftime('%d %b %Y') }}</td>
+                  <td class="py-3">{{ inv.plan }} ({{ inv.billing_cycle }})</td>
+                  <td class="py-3 font-bold">{{ inv.amount | currency_inr }}</td>
+                  <td class="py-3 text-slate-500">{{ inv.payment_method }}</td>
+                  <td class="py-3 text-right">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      Paid
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="py-8 text-center text-slate-400 text-xs">
+          No invoices generated yet.
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

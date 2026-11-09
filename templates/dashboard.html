@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Career Dashboard – PathForge{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Top Welcome & Plan Overview -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-teal-950 rounded-3xl p-6 sm:p-8 text-white mb-8 shadow-xl border border-slate-800">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <div class="flex items-center space-x-2.5 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-400">AI Career Intelligence Dashboard</span>
+            <span class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full 
+              {% if user.current_plan == 'founder' %}bg-amber-400 text-slate-950
+              {% elif user.current_plan == 'pro' %}bg-teal-400 text-slate-950
+              {% else %}bg-slate-700 text-slate-200{% endif %}">
+              {{ user.current_plan.capitalize() }} Plan
+            </span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back, {{ user.name }}!</h1>
+          <p class="text-xs text-slate-300 mt-1">
+            Student: <strong>{{ user.latest_assessment.branch if user.latest_assessment else 'Engineering & Tech' }}</strong> &bull; AI Career Guidance Active
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <a href="{{ url_for('assessment.start_assessment') }}" class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs shadow-md transition">
+            + New Career Assessment
+          </a>
+          <a href="{{ url_for('assessment.career_compass') }}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition">
+            Open Career Compass
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primary Career Trajectory & Pathway Readiness -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+      
+      <!-- Target Career Pathway (7 cols) -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border-2 border-teal-500/70 shadow-sm flex flex-col justify-between bg-teal-50/10">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-100/80 px-2.5 py-1 rounded-md">Primary Career Match</span>
+            {% if assessment and assessment.careers %}
+              <span class="text-xs font-extrabold text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">{{ assessment.careers[0].match_percentage }}% Profile Match</span>
+            {% endif %}
+          </div>
+
+          {% if assessment and assessment.careers %}
+            <h3 class="text-2xl font-black text-slate-900 mb-1">{{ assessment.careers[0].title }}</h3>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">{{ assessment.careers[0].description }}</p>
+
+            <div class="grid grid-cols-2 gap-3 text-xs mb-6">
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                <span class="text-slate-400 text-[11px] block">India Salary Range</span>
+                <strong class="text-slate-900 text-sm">{{ assessment.careers[0].salary_range }}</strong>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                <span class="text-slate-400 text-[11px] block">Placement Market Demand</span>
+                <strong class="text-emerald-700 text-xs">{{ assessment.careers[0].market_demand }}</strong>
+              </div>
+            </div>
+
+            <!-- Top Recommended Certification -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
+              <strong class="text-slate-900 block mb-0.5">Recommended Next Certification:</strong>
+              <span class="text-teal-700 font-semibold">{{ assessment.careers[0].certifications[0] }}</span>
+            </div>
+          {% else %}
+            <h3 class="text-base font-bold text-slate-900 mb-2">No Assessment Taken Yet</h3>
+            <p class="text-xs text-slate-500 mb-4">Complete your AI Career Assessment to diagnose your skills and discover your top matched careers.</p>
+            <a href="{{ url_for('assessment.start_assessment') }}" class="inline-block px-4 py-2 rounded-xl bg-teal-600 text-white font-bold text-xs">Start Free Assessment &rarr;</a>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center space-x-4 pt-4 border-t border-slate-100 mt-6">
+          <a href="{{ url_for('assessment.career_compass') }}" class="text-xs font-bold text-teal-600 hover:text-teal-700">View Full Skill-Gap Radars &rarr;</a>
+          <a href="{{ url_for('assessment.decision_meter') }}" class="text-xs font-bold text-slate-700 hover:text-slate-900">Decision Meter &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Career Pathway Meter & Goals (5 cols) -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pathway Readiness Index</span>
+            <span class="text-xs font-bold text-teal-600">Decision Meter</span>
+          </div>
+
+          <div class="space-y-4 mb-6">
+            <!-- Corporate Tech Placement -->
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span class="text-slate-800">Corporate & Tech Industry Role</span>
+                <span class="text-teal-700">{{ assessment.job_readiness_score if assessment else 92 }}%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-teal-600 h-2 rounded-full" style="width: {{ assessment.job_readiness_score if assessment else 92 }}%"></div>
+              </div>
+            </div>
+
+            <!-- Higher Studies -->
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span class="text-slate-800">Higher Studies (MS / MBA)</span>
+                <span class="text-indigo-700">{{ assessment.higher_studies_score if assessment else 80 }}%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ assessment.higher_studies_score if assessment else 80 }}%"></div>
+              </div>
+            </div>
+
+            <!-- Venture Track -->
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span class="text-slate-800">Entrepreneurship & Venture Track</span>
+                <span class="text-slate-600">{{ assessment.venture_readiness_score if assessment else 75 }}%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ assessment.venture_readiness_score if assessment else 75 }}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+            <strong class="text-slate-900 block mb-0.5">Placement Advisory:</strong>
+            Prioritize technical interviews and portfolio capstones for 7th-semester placements, while testing startup side-projects with zero financial risk.
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 mt-6">
+          <a href="{{ url_for('assessment.decision_meter') }}" class="text-xs font-bold text-teal-600 hover:text-teal-700">
+            View Decision Breakdown &rarr;
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Career Guidance Features & Optional Venture Modules -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      
+      <!-- Career Compass -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <span class="text-xs font-bold uppercase text-teal-600 tracking-wider mb-2 block">Career Compass & Radars</span>
+        <div class="text-base font-bold text-slate-900 mb-1">Full-Stack AI Application Engineer</div>
+        <p class="text-xs text-slate-500 mb-4">Radar chart comparison against industry benchmark benchmarks.</p>
+        <a href="{{ url_for('assessment.career_compass') }}" class="text-xs font-bold text-teal-600 hover:text-teal-700">Open Career Compass &rarr;</a>
+      </div>
+
+      <!-- AI Career Mentor -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <span class="text-xs font-bold uppercase text-purple-600 tracking-wider mb-2 block">24/7 AI Career Mentor</span>
+        <div class="text-base font-bold text-slate-900 mb-1">Interactive Advisory</div>
+        <p class="text-xs text-slate-500 mb-4">Ask about placement interview prep, salary negotiation, and resume tips.</p>
+        <button type="button" onclick="document.getElementById('mentor-toggle-btn').click()" class="text-xs font-bold text-teal-600 hover:text-teal-700">Chat with AI Mentor &rarr;</button>
+      </div>
+
+      <!-- Optional Venture Studio -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <span class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2 block">Optional Venture Track</span>
+        <div class="text-base font-bold text-slate-900 mb-1">{{ active_idea.title if active_idea else 'Venture Studio' }}</div>
+        <p class="text-xs text-slate-500 mb-4">Design Thinking, Lean Canvas & Indian Startup Grant tools.</p>
+        <a href="{{ url_for('venture.hub') }}" class="text-xs font-bold text-slate-700 hover:text-slate-900">Explore Venture Studio &rarr;</a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Lean Canvas Builder – PathForge Venture Studio{% endblock %}
+
+{% block content %}
+<div class="py-8 bg-slate-50 min-h-screen">
+  <div class="max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header Banner & Action Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-6 border-b border-slate-200 gap-4 no-print">
+      <div>
+        <div class="inline-flex items-center space-x-2 bg-indigo-50 text-indigo-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-200 mb-2">
+          <span>Engine 4 &bull; Ash Maurya Methodology</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ canvas.title if canvas else '9-Block Lean Canvas' }}</h1>
+        <p class="mt-1 text-xs text-slate-600">
+          Venture: <strong>{{ active_idea.title if active_idea else 'Student Venture' }}</strong> &bull; Systematic 1-Page Business Model
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- AI Auto-Fill Form -->
+        <form method="POST" action="{{ url_for('venture.lean_canvas') }}">
+          <input type="hidden" name="action" value="autofill">
+          <button type="submit" class="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition flex items-center space-x-1.5">
+            <span>✨ AI Auto-Fill Canvas</span>
+          </button>
+        </form>
+
+        <!-- Save Button (triggers the canvas form submit) -->
+        <button type="button" onclick="document.getElementById('lean-canvas-form').submit()" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition">
+          💾 Save Changes
+        </button>
+
+        <!-- Export to PDF / Clean Print View -->
+        {% if current_user and current_user.has_access('pro') %}
+          <button type="button" onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold text-xs shadow-xs transition flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Export to PDF / Print</span>
+          </button>
+        {% else %}
+          <a href="{{ url_for('subscription.pricing', required_plan='pro') }}" class="px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 font-semibold text-xs shadow-xs transition flex items-center space-x-1.5">
+            <span>🔒 Unlock PDF Export (Pro)</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Interactive 9-Block Lean Canvas Grid Form -->
+    <form id="lean-canvas-form" method="POST" action="{{ url_for('venture.lean_canvas') }}">
+      <input type="hidden" name="action" value="save">
+      <input type="hidden" name="title" value="{{ canvas.title if canvas else 'Lean Canvas' }}">
+
+      <div class="bg-white rounded-2xl border border-slate-300 shadow-sm p-4 sm:p-6 print-page">
+        
+        <!-- Header in print mode -->
+        <div class="hidden print:block pb-4 mb-4 border-b border-slate-300">
+          <h2 class="text-xl font-bold">{{ canvas.title }}</h2>
+          <p class="text-xs text-slate-600">Created with PathForge – Career Compass & Venture Studio</p>
+        </div>
+
+        <!-- 5-Column Top Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          
+          <!-- Block 1: Problem -->
+          <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between min-h-[300px]">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-black uppercase text-slate-800 tracking-wider">1. Problem</span>
+                <span class="text-[10px] text-slate-400 font-bold">Top 3</span>
+              </div>
+              <textarea name="problem" rows="7" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.problem if canvas else '' }}</textarea>
+            </div>
+            <div class="mt-2 pt-2 border-t border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600 uppercase block mb-1">Existing Alternatives:</span>
+              <textarea name="existing_alternatives" rows="2" class="w-full text-[11px] bg-white rounded-lg border border-slate-200 p-2 focus:outline-none resize-none">{{ canvas.existing_alternatives if canvas else '' }}</textarea>
+            </div>
+          </div>
+
+          <!-- Block 2: Solution & Key Metrics -->
+          <div class="flex flex-col gap-4 min-h-[300px]">
+            <!-- Solution -->
+            <div class="flex-1 rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-black uppercase text-slate-800 tracking-wider">4. Solution</span>
+                  <span class="text-[10px] text-slate-400 font-bold">Top 3 Features</span>
+                </div>
+                <textarea name="solution" rows="4" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.solution if canvas else '' }}</textarea>
+              </div>
+            </div>
+            <!-- Key Metrics -->
+            <div class="flex-1 rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-black uppercase text-slate-800 tracking-wider">8. Key Metrics</span>
+                  <span class="text-[10px] text-slate-400 font-bold">AARRR / KPIs</span>
+                </div>
+                <textarea name="key_metrics" rows="4" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.key_metrics if canvas else '' }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Block 3: Unique Value Proposition -->
+          <div class="rounded-xl border-2 border-teal-500/80 p-3 bg-teal-50/20 flex flex-col justify-between min-h-[300px]">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-black uppercase text-teal-900 tracking-wider">3. Unique Value Prop</span>
+                <span class="text-[10px] text-teal-700 font-bold">Single Message</span>
+              </div>
+              <textarea name="unique_value_proposition" rows="7" class="w-full text-xs bg-white rounded-lg border border-teal-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.unique_value_proposition if canvas else '' }}</textarea>
+            </div>
+            <div class="mt-2 pt-2 border-t border-teal-200">
+              <span class="text-[10px] font-bold text-teal-800 uppercase block mb-1">High-Level Concept:</span>
+              <textarea name="high_level_concept" rows="2" class="w-full text-[11px] bg-white rounded-lg border border-teal-200 p-2 focus:outline-none resize-none">{{ canvas.high_level_concept if canvas else '' }}</textarea>
+            </div>
+          </div>
+
+          <!-- Block 4: Unfair Advantage & Channels -->
+          <div class="flex flex-col gap-4 min-h-[300px]">
+            <!-- Unfair Advantage -->
+            <div class="flex-1 rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-black uppercase text-slate-800 tracking-wider">9. Unfair Advantage</span>
+                  <span class="text-[10px] text-slate-400 font-bold">Defensibility</span>
+                </div>
+                <textarea name="unfair_advantage" rows="4" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.unfair_advantage if canvas else '' }}</textarea>
+              </div>
+            </div>
+            <!-- Channels -->
+            <div class="flex-1 rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-black uppercase text-slate-800 tracking-wider">5. Channels</span>
+                  <span class="text-[10px] text-slate-400 font-bold">Path to Users</span>
+                </div>
+                <textarea name="channels" rows="4" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.channels if canvas else '' }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Block 5: Customer Segments -->
+          <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/60 flex flex-col justify-between min-h-[300px]">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-black uppercase text-slate-800 tracking-wider">2. Customer Segments</span>
+                <span class="text-[10px] text-slate-400 font-bold">Target Users</span>
+              </div>
+              <textarea name="customer_segments" rows="7" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.customer_segments if canvas else '' }}</textarea>
+            </div>
+            <div class="mt-2 pt-2 border-t border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600 uppercase block mb-1">Early Adopters:</span>
+              <textarea name="early_adopters" rows="2" class="w-full text-[11px] bg-white rounded-lg border border-slate-200 p-2 focus:outline-none resize-none">{{ canvas.early_adopters if canvas else '' }}</textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 2-Column Bottom Section: Cost Structure & Revenue Streams -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          
+          <!-- Cost Structure -->
+          <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-black uppercase text-slate-800 tracking-wider">7. Cost Structure</span>
+              <span class="text-[10px] text-slate-400 font-bold">Customer Acq, Hosting, Operations</span>
+            </div>
+            <textarea name="cost_structure" rows="3" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.cost_structure if canvas else '' }}</textarea>
+          </div>
+
+          <!-- Revenue Streams -->
+          <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/60">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-black uppercase text-slate-800 tracking-wider">6. Revenue Streams</span>
+              <span class="text-[10px] text-slate-400 font-bold">Revenue Model, Pricing, Lifetime Value</span>
+            </div>
+            <textarea name="revenue_streams" rows="3" class="w-full text-xs bg-white rounded-lg border border-slate-200 p-2.5 focus:outline-none focus:ring-1 focus:ring-teal-500 leading-relaxed resize-none">{{ canvas.revenue_streams if canvas else '' }}</textarea>
+          </div>
+
+        </div>
+
+      </div>
+    </form>
+
+    <!-- Viva Context Box -->
+    <div class="mt-8 p-4 rounded-xl bg-slate-100 text-slate-600 text-xs border border-slate-200 no-print">
+      <strong class="text-slate-900 block mb-1">💡 Viva & Exam Concept: Why Ash Maurya's Lean Canvas over Alex Osterwalder's Business Model Canvas?</strong>
+      <p class="leading-relaxed">
+        The traditional Business Model Canvas (BMC) was created for established enterprises and includes <em>Key Partners, Key Activities, Key Resources, and Customer Relationships</em>. In early-stage startups, these are unknowns. Ash Maurya replaced those four blocks with <strong>Problem, Solution, Key Metrics, and Unfair Advantage</strong>, shifting the focus to <em>problem-solution fit</em> and rapid falsification.
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
