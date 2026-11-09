@@ -96,6 +96,10 @@ def login():
             session["user_email"] = user.email
             session["user_role"] = user.role
 
+            if user.role != "admin" and not user.latest_assessment:
+                flash(f"Welcome, {user.name}! Please attend your AI Career Assessment to generate your personalized Career Compass.", "info")
+                return redirect(url_for("assessment.start_assessment"))
+
             flash(f"Welcome back, {user.name}!", "success")
             return redirect(next_url)
         else:

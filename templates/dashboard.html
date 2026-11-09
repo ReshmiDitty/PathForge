@@ -19,9 +19,9 @@
               {{ user.current_plan.capitalize() }} Plan
             </span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back, {{ user.name }}!</h1>
+          <h1 id="dashboard-welcome-title" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back, {{ user.name }}!</h1>
           <p class="text-xs text-slate-300 mt-1">
-            Student: <strong>{{ user.latest_assessment.branch if user.latest_assessment else 'Engineering & Tech' }}</strong> &bull; AI Career Guidance Active
+            Student: <strong id="dashboard-student-branch">{{ user.latest_assessment.branch if user.latest_assessment else 'Complete Assessment to Set Branch' }}</strong> &bull; AI Career Guidance Active
           </p>
         </div>
 
@@ -45,35 +45,39 @@
           <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-100/80 px-2.5 py-1 rounded-md">Primary Career Match</span>
             {% if assessment and assessment.careers %}
-              <span class="text-xs font-extrabold text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">{{ assessment.careers[0].match_percentage }}% Profile Match</span>
+              <span id="dashboard-match-badge" class="text-xs font-extrabold text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">{{ assessment.careers[0].match_percentage }}% Profile Match</span>
             {% endif %}
           </div>
 
-          {% if assessment and assessment.careers %}
-            <h3 class="text-2xl font-black text-slate-900 mb-1">{{ assessment.careers[0].title }}</h3>
-            <p class="text-xs text-slate-600 mb-4 leading-relaxed">{{ assessment.careers[0].description }}</p>
+          <div id="dashboard-has-assessment" class="{% if not (assessment and assessment.careers) %}hidden{% endif %}">
+            {% if assessment and assessment.careers %}
+              <h3 id="dashboard-career-title" class="text-2xl font-black text-slate-900 mb-1">{{ assessment.careers[0].title }}</h3>
+              <p class="text-xs text-slate-600 mb-4 leading-relaxed">{{ assessment.careers[0].description }}</p>
 
-            <div class="grid grid-cols-2 gap-3 text-xs mb-6">
-              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-                <span class="text-slate-400 text-[11px] block">India Salary Range</span>
-                <strong class="text-slate-900 text-sm">{{ assessment.careers[0].salary_range }}</strong>
+              <div class="grid grid-cols-2 gap-3 text-xs mb-6">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                  <span class="text-slate-400 text-[11px] block">India Salary Range</span>
+                  <strong class="text-slate-900 text-sm">{{ assessment.careers[0].salary_range }}</strong>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                  <span class="text-slate-400 text-[11px] block">Placement Market Demand</span>
+                  <strong class="text-emerald-700 text-xs">{{ assessment.careers[0].market_demand }}</strong>
+                </div>
               </div>
-              <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
-                <span class="text-slate-400 text-[11px] block">Placement Market Demand</span>
-                <strong class="text-emerald-700 text-xs">{{ assessment.careers[0].market_demand }}</strong>
-              </div>
-            </div>
 
-            <!-- Top Recommended Certification -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
-              <strong class="text-slate-900 block mb-0.5">Recommended Next Certification:</strong>
-              <span class="text-teal-700 font-semibold">{{ assessment.careers[0].certifications[0] }}</span>
-            </div>
-          {% else %}
-            <h3 class="text-base font-bold text-slate-900 mb-2">No Assessment Taken Yet</h3>
-            <p class="text-xs text-slate-500 mb-4">Complete your AI Career Assessment to diagnose your skills and discover your top matched careers.</p>
-            <a href="{{ url_for('assessment.start_assessment') }}" class="inline-block px-4 py-2 rounded-xl bg-teal-600 text-white font-bold text-xs">Start Free Assessment &rarr;</a>
-          {% endif %}
+              <!-- Top Recommended Certification -->
+              <div class="p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
+                <strong class="text-slate-900 block mb-0.5">Recommended Next Certification:</strong>
+                <span class="text-teal-700 font-semibold">{{ assessment.careers[0].certifications[0] }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div id="dashboard-no-assessment" class="{% if assessment and assessment.careers %}hidden{% endif %} py-4">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">No Assessment Taken Yet</h3>
+            <p class="text-xs text-slate-500 mb-5">Please attend your AI Career Assessment on your own to diagnose your skills and generate your personalized Career Compass & Pathway Readiness Report.</p>
+            <a href="{{ url_for('assessment.start_assessment') }}" class="inline-block px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-sm transition">Attend AI Career Assessment &rarr;</a>
+          </div>
         </div>
 
         <div class="flex items-center space-x-4 pt-4 border-t border-slate-100 mt-6">

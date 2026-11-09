@@ -221,13 +221,54 @@ function initAssessmentForm() {
     }
   }
 
-  window.resetAssessmentStep = function () {
+  window.resetAssessmentStep = function (clearInputs = false) {
+    if (clearInputs) {
+      form.reset();
+      form.querySelectorAll('.skill-val-badge').forEach(b => { b.innerText = '1/10'; });
+      const riskVal = document.getElementById('risk-val');
+      const autoVal = document.getElementById('autonomy-val');
+      if (riskVal) riskVal.innerText = '1/10';
+      if (autoVal) autoVal.innerText = '1/10';
+      form.querySelectorAll('input[name="primary_goal"]').forEach(r => {
+        r.checked = false;
+        const lbl = r.closest("label");
+        if (lbl) {
+          lbl.className = "flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 text-center cursor-pointer hover:border-teal-500 transition";
+        }
+      });
+    }
     currentStep = 0;
     updateStep(0, false);
   };
 
+  function validateCurrentStep() {
+    if (currentStep === 0) {
+      const branch = form.querySelector('select[name="branch"]');
+      const year = form.querySelector('select[name="year_of_study"]');
+      const college = form.querySelector('input[name="college"]');
+      if (!branch || !branch.value || !year || !year.value || !college || !college.value.trim()) {
+        alert("Please select your Academic Branch, Year of Study, and enter your College / University name to continue.");
+        return false;
+      }
+    } else if (currentStep === 1) {
+      const checkedInterests = form.querySelectorAll('input[name="interests"]:checked');
+      if (checkedInterests.length === 0) {
+        alert("Please select at least 1 Passion Domain to continue.");
+        return false;
+      }
+    } else if (currentStep === 3) {
+      const checkedStrengths = form.querySelectorAll('input[name="strengths"]:checked');
+      if (checkedStrengths.length === 0) {
+        alert("Please select at least 1 Strength to continue.");
+        return false;
+      }
+    }
+    return true;
+  }
+
   nextBtns.forEach(btn => {
     btn.addEventListener("click", () => {
+      if (!validateCurrentStep()) return;
       if (currentStep < steps.length - 1) {
         currentStep++;
         updateStep(currentStep);

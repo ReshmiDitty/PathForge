@@ -164,11 +164,99 @@ def get_full_application_html():
         flags=re.DOTALL
     )
 
-    # 4. Inject global SPA Navigation, Auth State Manager & Live Assessment Engine
+    # 4. Inject global SPA Navigation, Multi-User Account State & Blank Assessment Engine
     spa_nav_script = r"""
     <script>
+    // Client-side User Directory (persists newly registered & logged-in student accounts)
+    window.registeredUsers = {
+        'student@pathforge.edu': {
+            name: 'Aarav Sharma',
+            email: 'student@pathforge.edu',
+            hasAssessment: true,
+            isAdmin: false,
+            branch: 'Computer Science & Engineering',
+            year: '3rd Year'
+        },
+        'admin@pathforge.edu': {
+            name: 'PathForge Admin',
+            email: 'admin@pathforge.edu',
+            hasAssessment: true,
+            isAdmin: true,
+            branch: 'Platform Administration',
+            year: 'Admin'
+        }
+    };
+
+    try {
+        var savedUsers = localStorage.getItem('pathforge_users');
+        if (savedUsers) {
+            var parsed = JSON.parse(savedUsers);
+            for (var k in parsed) {
+                window.registeredUsers[k] = parsed[k];
+            }
+        }
+    } catch (e) {}
+
+    window.saveUserStore = function() {
+        try {
+            localStorage.setItem('pathforge_users', JSON.stringify(window.registeredUsers));
+        } catch (e) {}
+    };
+
+    // Active session user (starts as demo student)
+    window.currentUser = window.registeredUsers['student@pathforge.edu'];
+
+    // Update all DOM elements (Navbar, Dashboard, Career Compass) with the active user's profile
+    window.applyUserProfile = function(user, isNewAccount) {
+        window.currentUser = user;
+        window.setNavbarAuthState(true, user.name, user.email, user.isAdmin);
+
+        // Update Dashboard Welcome Title & Branch
+        var dashWelcome = document.getElementById('dashboard-welcome-title');
+        if (dashWelcome) {
+            dashWelcome.innerText = (isNewAccount ? 'Welcome, ' : 'Welcome back, ') + user.name + '!';
+        }
+        var dashBranch = document.getElementById('dashboard-student-branch');
+        if (dashBranch) {
+            dashBranch.innerText = user.hasAssessment ? (user.branch || 'Engineering & Tech') : 'Complete Assessment to Set Branch';
+        }
+
+        // Toggle Dashboard Assessment vs Empty State
+        var hasAssBox = document.getElementById('dashboard-has-assessment');
+        var noAssBox = document.getElementById('dashboard-no-assessment');
+        var matchBadge = document.getElementById('dashboard-match-badge');
+        if (hasAssBox && noAssBox) {
+            if (user.hasAssessment) {
+                hasAssBox.classList.remove('hidden');
+                noAssBox.classList.add('hidden');
+                if (matchBadge) matchBadge.classList.remove('hidden');
+            } else {
+                hasAssBox.classList.add('hidden');
+                noAssBox.classList.remove('hidden');
+                if (matchBadge) matchBadge.classList.add('hidden');
+            }
+        }
+
+        // Update Career Compass Student Header
+        var compassView = document.getElementById('view-compass');
+        if (compassView) {
+            var subHeader = compassView.querySelector('p.mt-1.text-xs.text-slate-600');
+            if (subHeader) {
+                var bText = user.branch || 'Engineering & Tech';
+                var yText = user.year ? ' (' + user.year + ')' : '';
+                subHeader.innerHTML = 'Student: <strong>' + user.name + '</strong> &bull; Major: <strong>' + bText + '</strong>' + yText;
+            }
+        }
+    };
+
     // Global SPA Navigation Engine
     window.navigateTo = function(viewName) {
+        // Gate Career Compass & Decision Meter if a new student hasn't attended the assessment yet
+        if ((viewName === 'compass' || viewName === 'decision') && window.currentUser && !window.currentUser.isAdmin && !window.currentUser.hasAssessment) {
+            window.showToastBanner('Please complete your AI Career Assessment on your own first, ' + window.currentUser.name + '!', 'info');
+            viewName = 'assessment';
+        }
+
         var views = document.querySelectorAll('.page-view');
         views.forEach(function(el) {
             el.style.display = 'none';
@@ -178,9 +266,10 @@ def get_full_application_html():
             target.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            // If opening the AI Assessment page, reset to Step 1 of 5
+            // If opening the AI Assessment page, always reset to Step 1 and clear inputs for unassessed users
             if (viewName === 'assessment' && typeof window.resetAssessmentStep === 'function') {
-                window.resetAssessmentStep();
+                var shouldClear = !(window.currentUser && window.currentUser.email === 'student@pathforge.edu' && window.currentUser.hasAssessment);
+                window.resetAssessmentStep(shouldClear);
             }
 
             // Re-trigger resize for responsive Chart.js rendering
@@ -290,11 +379,11 @@ def get_full_application_html():
             var href = a.getAttribute('href');
             if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
 
-            // Strip query string for route matching (e.g. /login?next=/dashboard -> /login)
             var cleanHref = href.split('?')[0].replace(/\/$/, '') || '/';
 
             if (cleanHref === '/logout') {
                 e.preventDefault();
+                window.currentUser = null;
                 window.setNavbarAuthState(false);
                 window.showToastBanner('You have been signed out successfully.', 'info');
                 window.navigateTo('login');
@@ -303,6 +392,10 @@ def get_full_application_html():
 
             if (routeMap[cleanHref]) {
                 e.preventDefault();
+                // If clicking "Start AI Career Assessment", ensure form is completely blank
+                if (routeMap[cleanHref] === 'assessment' && typeof window.resetAssessmentStep === 'function') {
+                    window.resetAssessmentStep(true);
+                }
                 window.navigateTo(routeMap[cleanHref]);
             } else if (cleanHref.indexOf('/checkout/') === 0) {
                 e.preventDefault();
@@ -317,7 +410,7 @@ def get_full_application_html():
             assessmentForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // 1. Read user inputs from the 5-step form
+                // Validate Step 5 fields
                 var branchSelect = assessmentForm.querySelector('select[name="branch"]');
                 var yearSelect = assessmentForm.querySelector('select[name="year_of_study"]');
                 var skillInputs = assessmentForm.querySelectorAll('input[name="skill_rating"]');
@@ -325,26 +418,43 @@ def get_full_application_html():
                 var riskInput = assessmentForm.querySelector('input[name="risk_appetite"]');
                 var autonomyInput = assessmentForm.querySelector('input[name="stability_vs_autonomy"]');
                 var hoursSelect = assessmentForm.querySelector('select[name="hours_per_week"]');
+                var capitalSelect = assessmentForm.querySelector('select[name="capital_willing"]');
 
-                var branch = branchSelect ? branchSelect.value : 'Computer Science & Engineering';
-                var year = yearSelect ? yearSelect.value : '3rd Year';
-                var goal = goalRadio ? goalRadio.value : 'job';
+                if (!goalRadio || !hoursSelect || !hoursSelect.value || !capitalSelect || !capitalSelect.value) {
+                    alert("Please select your Primary Post-College Goal, Available Weekly Hours, and Optional Budget to generate your report.");
+                    return;
+                }
+
+                var branch = (branchSelect && branchSelect.value) ? branchSelect.value : 'Computer Science & Engineering';
+                var year = (yearSelect && yearSelect.value) ? yearSelect.value : '3rd Year';
+                var goal = goalRadio.value;
                 var risk = riskInput ? parseInt(riskInput.value, 10) : 5;
-                var autonomy = autonomyInput ? parseInt(autonomyInput.value, 10) : 6;
-                var hours = hoursSelect ? parseInt(hoursSelect.value, 10) : 18;
+                var autonomy = autonomyInput ? parseInt(autonomyInput.value, 10) : 5;
+                var hours = parseInt(hoursSelect.value, 10) || 18;
 
                 var ratings = [];
                 skillInputs.forEach(function(inp) {
-                    ratings.push(parseFloat(inp.value) || 7.5);
+                    ratings.push(parseFloat(inp.value) || 5.0);
                 });
-                var avgSkill = ratings.length ? (ratings.reduce(function(a, b) { return a + b; }, 0) / ratings.length) : 7.5;
+                var avgSkill = ratings.length ? (ratings.reduce(function(a, b) { return a + b; }, 0) / ratings.length) : 5.0;
 
-                // 2. Update Career Compass Header & Radar Chart
+                // Mark current user's assessment as completed and update their profile
+                var activeName = (window.currentUser && window.currentUser.name) ? window.currentUser.name : 'Student';
+                if (window.currentUser) {
+                    window.currentUser.hasAssessment = true;
+                    window.currentUser.branch = branch;
+                    window.currentUser.year = year;
+                    window.registeredUsers[window.currentUser.email] = window.currentUser;
+                    window.saveUserStore();
+                    window.applyUserProfile(window.currentUser, false);
+                }
+
+                // Update Career Compass Header & Radar Chart
                 var compassView = document.getElementById('view-compass');
                 if (compassView) {
                     var subHeader = compassView.querySelector('p.mt-1.text-xs.text-slate-600');
                     if (subHeader) {
-                        subHeader.innerHTML = 'Student: <strong>Aarav Sharma</strong> &bull; Major: <strong>' + branch + '</strong> (' + year + ')';
+                        subHeader.innerHTML = 'Student: <strong>' + activeName + '</strong> &bull; Major: <strong>' + branch + '</strong> (' + year + ')';
                     }
                 }
 
@@ -357,7 +467,7 @@ def get_full_application_html():
                     }
                 }
 
-                // 3. Recalculate Tri-Path Decision Meter Scores
+                // Recalculate Tri-Path Decision Meter Scores
                 var jobScore = Math.round(65 + (avgSkill * 2.8) + (Math.min(autonomy, 7) * 0.8) + (goal === 'job' ? 10 : 0));
                 jobScore = Math.max(50, Math.min(96, jobScore));
 
@@ -387,13 +497,13 @@ def get_full_application_html():
                     }
                 }
 
-                // 4. Show confirmation banner and navigate to Career Compass
-                window.showToastBanner('Assessment successfully analyzed! Here is your updated AI Career Compass & Skill-Gap Report.');
+                // Show confirmation banner and navigate to Career Compass
+                window.showToastBanner('Assessment successfully analyzed for ' + activeName + '! Here is your personalized AI Career Compass Report.');
                 window.navigateTo('compass');
             });
         }
 
-        // Intercept Sign In, Register, and Venture Studio forms so they work client-side without 404
+        // Intercept Sign In, Register, and Venture Studio forms
         document.body.addEventListener('submit', function(e) {
             var form = e.target;
             if (!form || form.id === 'assessment-form') return;
@@ -403,23 +513,71 @@ def get_full_application_html():
             if (action === '/login') {
                 var emailInp = form.querySelector('input[name="email"]');
                 var emailVal = emailInp ? emailInp.value.trim().toLowerCase() : 'student@pathforge.edu';
-                if (emailVal.indexOf('admin') !== -1) {
-                    window.setNavbarAuthState(true, 'PathForge Admin', emailVal, true);
-                    window.showToastBanner('Welcome back, PathForge Admin!');
+
+                var userRec = window.registeredUsers[emailVal];
+                if (!userRec) {
+                    // A brand-new student logging in with their own email
+                    var rawPrefix = emailVal.split('@')[0].replace(/[._-]+/g, ' ');
+                    var formattedName = rawPrefix.replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                    userRec = {
+                        name: formattedName,
+                        email: emailVal,
+                        hasAssessment: false,
+                        isAdmin: (emailVal.indexOf('admin') !== -1),
+                        branch: '',
+                        year: ''
+                    };
+                    window.registeredUsers[emailVal] = userRec;
+                    window.saveUserStore();
+                }
+
+                window.applyUserProfile(userRec, !userRec.hasAssessment);
+
+                if (userRec.isAdmin) {
+                    window.showToastBanner('Welcome back, ' + userRec.name + '!');
                     window.navigateTo('admin');
+                } else if (!userRec.hasAssessment) {
+                    if (typeof window.resetAssessmentStep === 'function') {
+                        window.resetAssessmentStep(true);
+                    }
+                    window.showToastBanner('Welcome, ' + userRec.name + '! Please attend the AI Career Assessment on your own to generate your report.', 'info');
+                    window.navigateTo('assessment');
                 } else {
-                    var dispName = emailVal === 'student@pathforge.edu' ? 'Aarav Sharma' : emailVal.split('@')[0];
-                    window.setNavbarAuthState(true, dispName, emailVal, false);
-                    window.showToastBanner('Welcome back, ' + dispName + '!');
+                    window.showToastBanner('Welcome back, ' + userRec.name + '!');
                     window.navigateTo('dashboard');
                 }
             } else if (action === '/register') {
                 var nameInp = form.querySelector('input[name="name"]');
                 var regEmailInp = form.querySelector('input[name="email"]');
-                var newName = (nameInp && nameInp.value.trim()) ? nameInp.value.trim() : 'Aarav Sharma';
-                var newEmail = (regEmailInp && regEmailInp.value.trim()) ? regEmailInp.value.trim() : 'student@pathforge.edu';
-                window.setNavbarAuthState(true, newName, newEmail, false);
-                window.showToastBanner("Welcome to PathForge, " + newName + "! Let's start with your AI Career Assessment.");
+                var passInp = form.querySelector('input[name="password"]');
+                var confInp = form.querySelector('input[name="confirm_password"]');
+
+                if (passInp && confInp && passInp.value !== confInp.value) {
+                    alert("Passwords do not match. Please re-enter your password.");
+                    return;
+                }
+
+                var newName = (nameInp && nameInp.value.trim()) ? nameInp.value.trim() : 'Student';
+                var newEmail = (regEmailInp && regEmailInp.value.trim().toLowerCase()) ? regEmailInp.value.trim().toLowerCase() : 'student@college.edu';
+
+                var newUserRec = {
+                    name: newName,
+                    email: newEmail,
+                    hasAssessment: false,
+                    isAdmin: false,
+                    branch: '',
+                    year: ''
+                };
+                window.registeredUsers[newEmail] = newUserRec;
+                window.saveUserStore();
+
+                // Apply new student's name everywhere (never Aarav) and clear the assessment form
+                window.applyUserProfile(newUserRec, true);
+                if (typeof window.resetAssessmentStep === 'function') {
+                    window.resetAssessmentStep(true);
+                }
+
+                window.showToastBanner('Welcome to PathForge, ' + newName + '! Please complete your AI Career Assessment on your own below.');
                 window.navigateTo('assessment');
             } else if (action.indexOf('/design-thinking/delete/') !== -1) {
                 var card = form.closest('.rounded-xl');
