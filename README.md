@@ -58,7 +58,87 @@ venturemicroproj/
 
 ---
 
-## ⚡ 3. Quick Setup & Run Instructions
+## 🌐 3. Website Content & Structural Architecture
+
+```
+                                  [ LANDING PAGE (/) ]
+                     Hero • 3-Step Methodology • Feature Cards • Pricing
+                                            │
+               ┌────────────────────────────┴───────────────────────────┐
+               ▼                                                        ▼
+      [ STUDENT AUTH ]                                         [ EXPLORE CAREERS ]
+    Register / Login / Quick-fill                             15+ In-Demand Tech Roles
+               │
+               ▼
+   [ AI CAREER ASSESSMENT ]  ──►  4-Stage Diagnostic Form
+               │                  (Branch, Interests, 6 Core Skills, Goals)
+               │
+        ┌──────┴───────────────────────────────────┐
+        ▼                                          ▼
+[ CAREER COMPASS ]                       [ PATHWAY DECISION METER ]
+• Top Matched Role & Match %             • Path 1: Corporate Job (92/100 - Primary)
+• Chart.js Skill-Gap Radar               • Path 2: Higher Studies (80/100)
+• 6-Month Placement Roadmap              • Path 3: Venture Track (75/100 - Optional)
+• Industry Certifications & CTC          • Strategic Placement Advisory Synthesis
+        │
+        ▼
+[ STUDENT DASHBOARD ]
+• Placement Readiness Gauge
+• Active Target Roles & Roadmaps
+• Plan Status & Usage Limits
+        │
+        ├──────────────────────────────────────────┐
+        ▼                                          ▼
+[ OPTIONAL VENTURE TRACK ]                [ MONETIZATION & PLATFORM ]
+• Idea Generator (Skills-to-Startup)     • Pricing (Free / Pro / Founder)
+• 5-Stage Design Thinking Board          • Checkout (Razorpay Test + 1-Click Demo)
+• Idea Validator (100-pt Scorecard)      • Billing & Invoices
+• Lean Canvas Builder (9-Block + PDF)    • "Our Business Model" (CAC/LTV Analysis)
+• MVP Planner & Pitch Deck Builder       • Admin Telemetry Analytics (/admin)
+• Founder Toolkit (SISFS, BIRAC Grants)
+```
+
+### Detailed Section Breakdown
+
+#### 1. Top-Level Layout & Global Elements
+- **Sticky Navigation Bar (`components/navbar.html`)**: Direct access to AI Career Assessment, Career Compass, Decision Meter, Explore Careers, and the Optional Venture Track. Dynamic profile dropdown with user plan badges (*Free*, *Pro*, or *Founder*) and 1-click logout.
+- **24/7 AI Career Mentor (`components/mentor_widget.html`)**: Persistent bottom-right drawer with quick-prompt pills (*"Analyze my skill gap"*, *"Top 3 placement interview tips"*, *"Should I do MS or take a job?"*). Powered by Claude 3.5 Sonnet with local deterministic fallback.
+- **Platform Footer (`components/footer.html`)**: Career guidance platform info, university placement links, and ethical AI disclosures.
+
+#### 2. Core Career Guidance Engine (Primary Pillar)
+- **AI Diagnostic Assessment (`/assessment`)**: 4-stage progressive intake: Academic Background, Domain Passions, Core Competencies (Python, Frontend, Data/ML, Product, System Design, Communication), and Career Ambition (defaults to *High-CTC Corporate Job*).
+- **Career Compass Report (`/career-compass`)**: Top Matched Role (e.g. *Full-Stack AI Application Engineer*, 94% match, ₹12–28 LPA), interactive Chart.js polar radar comparing student vs industry benchmark, actionable 6-month placement roadmap, curated certifications, and a Venture Bridge showing how these technical skills can also create a startup.
+- **Pathway Decision Meter (`/decision-meter`)**: Empirical 3-way trajectory evaluation:
+  - **Pathway 1 (Corporate & Tech Job - 92/100)**: Highlighted primary card focusing on structured career growth, immediate cash flow, and campus placement readiness.
+  - **Pathway 2 (Higher Studies - 80/100)**: Specialization for MS/M.Tech/MBA.
+  - **Pathway 3 (Venture Creation - 75/100)**: Optional startup innovation route.
+  - **Comparative Breakdown Chart & Strategic Placement Verdict**: Placement-first strategy advisory.
+- **Explore In-Demand Careers (`/careers`)**: 15+ curated tech roles with CTC packages, top recruiters, and required skills.
+
+#### 3. Student Dashboard (`/dashboard`)
+- Placement Readiness Gauge tracking overall profile strength.
+- Active target role summary and next upcoming roadmap milestone.
+- Saved assessment reports and remaining AI generations for current plan.
+
+#### 4. Optional Venture Track (`/venture-studio/*`)
+- **Idea Generator (`/ideas`)**: 4 practical startup concepts mapped to student's branch and skills.
+- **Design Thinking Board (`/design-thinking`)**: 5-stage interactive board (*Empathize $\rightarrow$ Define $\rightarrow$ Ideate $\rightarrow$ Prototype $\rightarrow$ Test*) with sticky notes.
+- **Idea Validator (`/validator`)**: 100-pt scorecard, TAM/SAM/SOM market sizing, and SWOT matrix with GO/PIVOT verdict.
+- **Lean Canvas Builder (`/lean-canvas`)**: Ash Maurya's 9-block grid with 1-click AI autofill and clean PDF/print export.
+- **MVP Sprint Planner (`/mvp-planner`)**: Smallest testable prototype, riskiest assumptions, and target metrics.
+- **Pitch Deck Builder (`/pitch-builder`)**: 10-slide investor outline with speaker notes and 60-second elevator speech.
+- **Founder Toolkit (`/toolkit`)**: Directory of Indian student grants (*SISFS, NIDHI-PRAYAS, BIRAC*) and IPR basics (*Patents, Trademarks, Copyrights*).
+
+#### 5. Monetization, Platform Economics & Admin
+- **Pricing (`/pricing`)**: 3 tiers (Free @ ₹0, Pro @ ₹199/mo, Founder @ ₹499/mo) with monthly/annual switch.
+- **Checkout (`/checkout/<tier>`)**: Razorpay Test Mode + instant 1-Click Demo Checkout Simulator and coupon system (`STUDENT20`).
+- **Billing (`/billing`)**: Invoice history and cancellation.
+- **"Our Business Model" (`/business-model`)**: Platform unit economics (CAC: ₹140, LTV: ₹890, LTV:CAC: 6.35x).
+- **Admin Analytics (`/admin`)**: Real-time KPI telemetry and Chart.js distribution charts.
+
+---
+
+## ⚡ 4. Quick Setup & Run Instructions
 
 ### Option A: Run as Flask Web Application
 ```bash
@@ -76,7 +156,7 @@ Open your browser at: **`http://localhost:8501`**
 
 ---
 
-## ☁️ 4. Deploying to Streamlit Cloud
+## ☁️ 5. Deploying to Streamlit Cloud
 
 To deploy PathForge on Streamlit Community Cloud:
 1. Push this repository to GitHub: `https://github.com/ReshmiDitty/PathForge`
@@ -90,7 +170,7 @@ To deploy PathForge on Streamlit Community Cloud:
 
 ---
 
-## 🔑 5. Demo & Test Credentials
+## 🔑 6. Demo & Test Credentials
 
 The database automatically seeds two pre-configured accounts on initial launch for instant viva testing:
 
@@ -103,7 +183,7 @@ The database automatically seeds two pre-configured accounts on initial launch f
 
 ---
 
-## 💳 6. Payment Testing & Demo Checkout Guide
+## 💳 7. Payment Testing & Demo Checkout Guide
 
 PathForge supports two modes of payment processing:
 1. **Live Razorpay Test Mode**: When `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are present in `.env`, the Razorpay Test modal opens.
@@ -120,7 +200,7 @@ PathForge supports two modes of payment processing:
 
 ---
 
-## 🎬 7. Step-by-Step Viva Demo Script
+## 🎬 8. Step-by-Step Viva Demo Script
 
 Follow this 5-minute walkthrough during your project demonstration or viva examination:
 
@@ -179,7 +259,7 @@ Follow this 5-minute walkthrough during your project demonstration or viva exami
 
 ---
 
-## 🎓 8. Academic Viva & Course Q&A Cheat Sheet
+## 🎓 9. Academic Viva & Course Q&A Cheat Sheet
 
 Prepare for these common professor questions:
 
@@ -203,7 +283,7 @@ Prepare for these common professor questions:
 
 ---
 
-## 🔒 9. Security & Ethical AI Notice
+## 🔒 10. Security & Ethical AI Notice
 - All secrets are isolated strictly in `.env`.
 - Passwords are encrypted using Werkzeug PBKDF2/SHA-256 salts.
 - Feature gating is enforced on backend Python route decorators (`@subscription_required`), preventing unauthorized URL tampering.

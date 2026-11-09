@@ -469,3 +469,4 @@ elif nav == "💳 Student Pricing":
 
     st.markdown("---")
     st.markdown("💡 **Student Discount:** Enter coupon code `STUDENT20` for an instant 20% discount!")
+
